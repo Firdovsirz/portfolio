@@ -13,6 +13,10 @@ export const site = {
     linkedin: "https://www.linkedin.com/in/firdovsi-rzaev/",
     email: "mailto:firdovsirz@gmail.com",
   },
+  cv: {
+    href: "/cv_firdovsi_rzaev.pdf",
+    downloadAs: "Firdovsi-Rzaev-CV.pdf",
+  },
   nav: [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },

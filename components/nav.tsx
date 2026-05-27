@@ -6,6 +6,7 @@ import { useState } from "react";
 import { site } from "@/lib/site";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandLogo } from "@/components/brand-logo";
+import { CvButton } from "@/components/cv-button";
 
 export function Nav() {
   const pathname = usePathname();
@@ -41,10 +42,12 @@ export function Nav() {
                 );
               })}
             </nav>
+            <CvButton />
             <ThemeToggle />
           </div>
 
-          <div className="md:hidden flex items-center gap-3">
+          <div className="md:hidden flex items-center gap-2">
+            <CvButton compact />
             <ThemeToggle />
             <button
               onClick={() => setOpen((v) => !v)}
