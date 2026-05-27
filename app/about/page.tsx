@@ -21,7 +21,7 @@ export default function AboutPage() {
           <div className="md:col-span-8 space-y-6 text-lg leading-relaxed text-muted">
             <p>
               I&apos;m a Computer Science undergraduate at <span className="text-foreground">Azerbaijan Technical University</span>{" "}
-              and Software Developer Team Lead at <span className="text-foreground">Dithari Innovation and Training Centre</span>.
+              and Software Developer Team Lead at <span className="text-foreground">Dithari</span>.
               At AzTU I serve as a Software Developer on the platforms team. Together these roles
               put me at the intersection of <span className="text-foreground">institutional engineering</span> and{" "}
               <span className="text-foreground">team leadership</span>.
@@ -40,10 +40,10 @@ export default function AboutPage() {
               without permission sprawl.
             </p>
             <p>
-              My next step is a <span className="text-foreground">funded MSc or MASc</span> in
-              Canada or Europe for the 2027 intake. I want to move from being the engineer who
-              ships institutional systems to being the <span className="text-foreground">research software engineer</span>{" "}
-              who designs the infrastructure those systems — and research labs — depend on.
+              The direction I&apos;m moving toward is{" "}
+              <span className="text-foreground">research software engineering</span> — designing
+              the infrastructure that institutional systems and research labs depend on, not just
+              the applications that sit on top.
             </p>
           </div>
 
@@ -62,10 +62,10 @@ export default function AboutPage() {
               </ul>
             </div>
             <div>
-              <p className="mono text-xs text-muted-2 uppercase tracking-widest mb-3">Looking for</p>
+              <p className="mono text-xs text-muted-2 uppercase tracking-widest mb-3">Open to</p>
               <p className="text-muted leading-relaxed">
-                MSc / MASc supervision, research assistantships, and collaborations in
-                research software engineering.
+                Engineering work, research collaborations, and projects in research software
+                engineering.
               </p>
             </div>
           </aside>

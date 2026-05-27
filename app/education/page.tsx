@@ -4,7 +4,7 @@ import { PageHeader, Section } from "@/components/section";
 export const metadata: Metadata = {
   title: "Education",
   description:
-    "Education of Firdovsi Rzaev — BSc Computer Science, Azerbaijan Technical University. Applying for funded MSc / MASc programmes in Canada and Europe for the 2027 intake.",
+    "Education of Firdovsi Rzaev — BSc Computer Science, Azerbaijan Technical University.",
 };
 
 export default function EducationPage() {
@@ -36,7 +36,7 @@ export default function EducationPage() {
                   <span className="text-foreground">85.2 / 100</span>.
                 </p>
                 <p>
-                  Concurrent professional roles at AzTU and Dithari Innovation Centre during the
+                  Concurrent professional roles at AzTU and Dithari during the
                   programme — academic work has directly informed and been informed by production
                   institutional engineering.
                 </p>
@@ -44,32 +44,10 @@ export default function EducationPage() {
             </div>
           </article>
 
-          <article className="bg-background py-12">
-            <div className="grid md:grid-cols-12 gap-8">
-              <div className="md:col-span-4">
-                <p className="mono text-xs text-accent uppercase tracking-widest mb-2">
-                  Planned · 2027 intake
-                </p>
-                <h3 className="serif text-2xl tracking-tight">MSc / MASc</h3>
-                <p className="text-muted mt-1">Canada or Europe</p>
-                <p className="mono text-xs text-muted-2 mt-2">Funded programmes</p>
-              </div>
-              <div className="md:col-span-8 space-y-4 text-muted leading-relaxed">
-                <p>
-                  Targeting funded MSc or MASc programmes in research software engineering,
-                  distributed systems, education technology, or research infrastructure.
-                </p>
-                <p>
-                  Open to research assistantships and visiting research engineer arrangements
-                  before the formal start.
-                </p>
-              </div>
-            </div>
-          </article>
         </div>
       </Section>
 
-      <Section eyebrow="Areas of interest" title="What I want to study and contribute to.">
+      <Section eyebrow="Areas of interest" title="What I study and work on.">
         <ul className="grid md:grid-cols-2 gap-x-10 gap-y-3 max-w-3xl">
           {[
             "Research Software Engineering",

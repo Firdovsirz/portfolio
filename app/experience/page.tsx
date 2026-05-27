@@ -4,21 +4,21 @@ import { PageHeader, Section } from "@/components/section";
 export const metadata: Metadata = {
   title: "Experience",
   description:
-    "Professional experience of Firdovsi Rzaev — Software Developer Team Lead at Dithari Innovation Centre and Software Developer at Azerbaijan Technical University.",
+    "Professional experience of Firdovsi Rzaev — Software Developer Team Lead at Dithari and Software Developer at Azerbaijan Technical University.",
 };
 
 const roles = [
   {
-    org: "Dithari Innovation and Training Centre",
+    org: "Dithari",
     role: "Software Developer Team Lead",
     period: "2024 — Present",
     location: "Baku, Azerbaijan",
     points: [
-      "Lead engineering on the centre's Learning Management System — lessons, attendance (incl. QR check-in), assignments, syllabus, AI tutor, separate teacher and student workflows.",
-      "Own technical architecture decisions, code review, release cadence, and onboarding for the engineering team.",
-      "Translate non-technical academic requirements into structured domain models and shipping features.",
+      "Lead the team building the Buyology e-commerce platform — a multi-surface system spanning web storefront, mobile app, and operations dashboard.",
+      "Own architecture decisions, code review, release cadence, and onboarding for the engineering team.",
+      "Designed the ordering and B2B inquiry pipelines end-to-end; coordinate three client surfaces against a shared API contract.",
     ],
-    stack: ["Next.js", "TypeScript", "FastAPI", "PostgreSQL", "Docker", "WebSocket"],
+    stack: ["Next.js", "React Native", "TypeScript", "Spring Boot", "PostgreSQL", "Docker"],
   },
   {
     org: "Azerbaijan Technical University",
@@ -32,18 +32,6 @@ const roles = [
     ],
     stack: ["React", "Next.js", "TypeScript", "Spring Boot", "FastAPI", "PostgreSQL"],
   },
-  {
-    org: "Buyology Trading FZ-LLC",
-    role: "Software Developer · Team Lead (Project)",
-    period: "2024 — Present",
-    location: "UAE (Remote)",
-    points: [
-      "Lead engineering on a multi-surface e-commerce platform — web storefront, mobile app, and administrative dashboard.",
-      "Coordinate three client surfaces against a shared API contract and run release planning for the team.",
-      "Designed the ordering and B2B inquiry pipelines end-to-end.",
-    ],
-    stack: ["Next.js", "React Native", "TypeScript", "Spring Boot", "PostgreSQL", "Docker"],
-  },
 ];
 
 export default function ExperiencePage() {
@@ -52,7 +40,7 @@ export default function ExperiencePage() {
       <PageHeader
         eyebrow="Experience"
         title="Engineering & leadership."
-        intro="Two concurrent roles plus an industry engagement — covering institutional platforms, an LMS, and a UAE-based e-commerce system."
+        intro="Two concurrent roles — leading the engineering team behind the Buyology e-commerce platform at Dithari, and shipping institutional platforms at Azerbaijan Technical University."
       />
 
       <Section>

@@ -13,7 +13,7 @@ Baku, Azerbaijan · [firdovsirzaev.online](https://firdovsirzaev.online) · [Lin
 
 I build production institutional systems and lead the engineering teams behind them. My day-to-day work spans a multi-surface e-commerce platform, a university-wide planning and reporting system, an e-grant submission and review pipeline, a researcher portal integrating Scopus / Web of Science / Google Scholar, and a learning management system used by teachers and students.
 
-I'm a final-stage Computer Science undergraduate at **Azerbaijan Technical University (AzTU)** and **Software Developer Team Lead at Dithari Innovation and Training Centre**, applying for funded **MSc / MASc programmes in Canada and Europe for the 2027 intake**.
+I'm a Computer Science undergraduate at **Azerbaijan Technical University (AzTU)** and **Software Developer Team Lead at Dithari**, leading the team behind the Buyology e-commerce platform.
 
 **Areas of specialization** &nbsp;·&nbsp; Software engineering &nbsp;·&nbsp; Distributed systems &nbsp;·&nbsp; Education technology &nbsp;·&nbsp; Data systems &nbsp;·&nbsp; Research infrastructure
 
@@ -44,7 +44,7 @@ I'm a final-stage Computer Science undergraduate at **Azerbaijan Technical Unive
 Scalable multi-surface e-commerce platform for **Buyology Trading FZ-LLC (UAE)** — web storefront, mobile app, and administrative dashboard backed by a shared service layer. Product catalogue, ordering pipeline, fulfilment, B2B inquiry intake.
 &nbsp;&nbsp;Stack — Next.js · React Native · TypeScript · Spring Boot · PostgreSQL · Docker · Nginx
 
-#### Learning Management System — *Team Lead, Dithari Innovation Centre*
+#### Learning Management System — *Software Developer, Dithari*
 Institutional LMS covering digital lesson management, attendance tracking with **QR check-in**, assignments, syllabus management, an **AI tutor** grounded in lesson context, and distinct student / teacher workflows.
 &nbsp;&nbsp;Stack — Next.js · TypeScript · FastAPI · PostgreSQL · WebSocket · Docker
 

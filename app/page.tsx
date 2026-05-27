@@ -23,14 +23,13 @@ export default function HomePage() {
         <div className="mt-12 grid md:grid-cols-2 gap-10 md:gap-16 max-w-4xl">
           <p className="text-muted text-lg leading-relaxed">
             I&apos;m Firdovsi Rzaev — Software Developer at Azerbaijan Technical University and
-            Software Developer Team Lead at Dithari Innovation Centre. I lead engineers and
-            architect institutional systems used daily across faculties, training centres, and
-            commerce platforms.
+            Software Developer Team Lead at Dithari, where I lead the team building the Buyology
+            e-commerce platform. I architect institutional systems used daily across faculties,
+            departments, and commerce surfaces.
           </p>
           <p className="text-muted text-lg leading-relaxed">
-            Applying for funded MSc / MASc programmes in Canada and Europe for 2027, with research
-            interests in distributed systems, education technology, and research infrastructure
-            systems.
+            My work spans distributed systems, education technology, and research infrastructure —
+            the kind of platforms institutions quietly rely on every day.
           </p>
         </div>
 
@@ -63,10 +62,10 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2 gap-6">
           {[
             {
-              org: "Dithari Innovation and Training Centre",
+              org: "Dithari",
               role: "Software Developer Team Lead",
               detail:
-                "Leading engineering on the centre's LMS — lesson management, attendance, assignments, AI tutor.",
+                "Leading the team building the Buyology e-commerce platform — web storefront, mobile app, and operations dashboard.",
             },
             {
               org: "Azerbaijan Technical University",
@@ -128,10 +127,10 @@ export default function HomePage() {
       </Section>
 
       {/* CTA */}
-      <Section eyebrow="Next" title="Open to research collaborations and MSc supervision conversations.">
+      <Section eyebrow="Next" title="Open to engineering work and research collaborations.">
         <p className="text-muted text-lg max-w-2xl leading-relaxed mb-8">
-          If you&apos;re a professor, lab, or recruiter working on distributed systems, research
-          software, education technology, or data infrastructure — I&apos;d like to hear from you.
+          If you&apos;re working on distributed systems, research software, education technology,
+          or data infrastructure — I&apos;d like to hear from you.
         </p>
         <div className="flex flex-wrap gap-4">
           <a

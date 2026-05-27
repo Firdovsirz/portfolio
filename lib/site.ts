@@ -3,7 +3,7 @@ export const site = {
   shortName: "Firdovsi Rzaev",
   title: "Firdovsi Rzaev — Software Engineer & Research Software Engineer",
   description:
-    "Firdovsi Rzaev is a software engineer and team lead building production institutional systems at Azerbaijan Technical University and Dithari Innovation Centre. Focused on distributed systems, education technology, and research infrastructure.",
+    "Firdovsi Rzaev is a software engineer and team lead building production institutional systems at Azerbaijan Technical University and Dithari. Focused on distributed systems, education technology, and research infrastructure.",
   url: "https://firdovsirzaev.online",
   email: "firdovsirz@gmail.com",
   location: "Baku, Azerbaijan",

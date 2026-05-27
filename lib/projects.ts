@@ -47,8 +47,8 @@ export const projects: Project[] = [
   {
     slug: "dithari-lms",
     name: "Dithari Learning Management System",
-    client: "Dithari Innovation and Training Centre",
-    role: "Software Developer Team Lead",
+    client: "Dithari",
+    role: "Software Developer",
     status: "Production",
     year: "2024 — Present",
     summary:

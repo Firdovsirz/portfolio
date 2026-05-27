@@ -11,7 +11,7 @@ type Partner = {
 
 const partners: Partner[] = [
   {
-    name: "Dithari Innovation and Training Centre",
+    name: "Dithari",
     shortName: "Dithari",
     logoBase: "dithari",
     href: "https://dithari.com",

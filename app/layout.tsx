@@ -66,9 +66,6 @@ export const metadata: Metadata = {
     "Distributed Systems",
     "Education Technology",
     "Research Infrastructure",
-    "MSc Canada",
-    "MASc Canada",
-    "MSc Europe",
     "Software Developer Baku",
   ],
   alternates: {
@@ -140,7 +137,7 @@ const personLd = {
     },
     {
       "@type": "Organization",
-      name: "Dithari Innovation and Training Centre",
+      name: "Dithari",
     },
   ],
   alumniOf: {

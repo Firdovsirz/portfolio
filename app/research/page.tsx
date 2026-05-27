@@ -39,8 +39,8 @@ export default function ResearchPage() {
     <>
       <PageHeader
         eyebrow="Research"
-        title="Where I want to go next."
-        intro="My current work is engineering-led. The research direction I&apos;m pursuing for MSc / MASc study sits at the intersection of distributed systems and the platforms research actually runs on."
+        title="The questions I'm working on."
+        intro="My work sits at the intersection of distributed systems engineering and the platforms research and education actually run on."
       />
 
       <Section eyebrow="Interests">
@@ -54,18 +54,14 @@ export default function ResearchPage() {
         </div>
       </Section>
 
-      <Section eyebrow="Direction" title="What I'm applying for.">
+      <Section eyebrow="Direction" title="Collaborations.">
         <div className="space-y-5 text-lg leading-relaxed text-muted max-w-3xl">
           <p>
-            I&apos;m targeting funded MSc and MASc programmes in <span className="text-foreground">Canada</span>{" "}
-            and <span className="text-foreground">Europe</span> for the <span className="text-foreground">2027</span>{" "}
-            intake, with a preference for labs working on research software, distributed data
-            systems, and education or research infrastructure.
+            I&apos;m especially interested in work on research software, distributed data systems,
+            and education or research infrastructure.
           </p>
           <p>
-            I&apos;m open to research assistantships and visiting research engineer arrangements
-            before the formal start. If your group is exploring related problems, I&apos;d like to
-            talk.
+            If your team or lab is exploring related problems, I&apos;d like to talk.
           </p>
         </div>
       </Section>

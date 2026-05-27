@@ -9,8 +9,8 @@ export function Footer() {
           <div>
             <p className="serif text-2xl tracking-tight">Firdovsi Rzaev</p>
             <p className="text-muted text-sm mt-2 max-w-md">
-              Software Engineer building production institutional systems. Applying for funded MSc / MASc
-              programmes in Canada and Europe, 2027 intake.
+              Software Engineer building production institutional systems across distributed
+              systems, education technology, and research infrastructure.
             </p>
           </div>
 

@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Get in touch with Firdovsi Rzaev — for research collaborations, MSc / MASc supervision conversations, and engineering work.",
+    "Get in touch with Firdovsi Rzaev — for engineering work, research collaborations, and projects in distributed systems, edtech, and research infrastructure.",
 };
 
 export default function ContactPage() {
@@ -15,7 +15,7 @@ export default function ContactPage() {
       <PageHeader
         eyebrow="Contact"
         title="Let's talk."
-        intro="Open to research collaborations, MSc / MASc supervision conversations, and engineering work in distributed systems, edtech, and research infrastructure."
+        intro="Open to engineering work, research collaborations, and projects in distributed systems, edtech, and research infrastructure."
       />
 
       <Section>
