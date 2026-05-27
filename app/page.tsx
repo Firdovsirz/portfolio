@@ -1,65 +1,163 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Section } from "@/components/section";
+import { ProjectCard } from "@/components/project-card";
+import { TrustedBy } from "@/components/trusted-by";
+import { projects } from "@/lib/projects";
+import { site } from "@/lib/site";
 
-export default function Home() {
+export default function HomePage() {
+  const featured = projects.filter((p) => p.status === "Production").slice(0, 4);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <>
+      {/* Hero */}
+      <section className="mx-auto max-w-6xl px-6 lg:px-10 pt-24 md:pt-36 pb-24 md:pb-32">
+        <p className="mono text-xs text-accent tracking-widest uppercase mb-6">
+          Software Engineer · Research Software Engineer
+        </p>
+        <h1 className="serif text-5xl md:text-7xl lg:text-8xl tracking-tight leading-[1.05] max-w-5xl">
+          Building production systems for institutions —{" "}
+          <span className="text-muted">and the research infrastructure behind them.</span>
+        </h1>
+
+        <div className="mt-12 grid md:grid-cols-2 gap-10 md:gap-16 max-w-4xl">
+          <p className="text-muted text-lg leading-relaxed">
+            I&apos;m Firdovsi Rzaev — Software Developer at Azerbaijan Technical University and
+            Software Developer Team Lead at Dithari Innovation Centre. I lead engineers and
+            architect institutional systems used daily across faculties, training centres, and
+            commerce platforms.
+          </p>
+          <p className="text-muted text-lg leading-relaxed">
+            Applying for funded MSc / MASc programmes in Canada and Europe for 2027, with research
+            interests in distributed systems, education technology, and research infrastructure
+            systems.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <div className="mt-12 flex flex-wrap gap-3">
+          <Link
+            href="/projects"
+            className="border hairline px-5 py-2.5 text-sm hover:border-[var(--border-strong)] hover:text-accent transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
+            View projects →
+          </Link>
+          <Link
+            href="/research"
+            className="border hairline px-5 py-2.5 text-sm hover:border-[var(--border-strong)] transition-colors"
+          >
+            Research interests
+          </Link>
+          <Link
+            href="/contact"
+            className="px-5 py-2.5 text-sm text-muted hover:text-foreground transition-colors"
+          >
+            Get in touch
+          </Link>
+        </div>
+      </section>
+
+      <TrustedBy />
+
+      {/* Current */}
+      <Section eyebrow="Current" title="Where I'm working right now.">
+        <div className="grid md:grid-cols-2 gap-6">
+          {[
+            {
+              org: "Dithari Innovation and Training Centre",
+              role: "Software Developer Team Lead",
+              detail:
+                "Leading engineering on the centre's LMS — lesson management, attendance, assignments, AI tutor.",
+            },
+            {
+              org: "Azerbaijan Technical University",
+              role: "Software Developer",
+              detail:
+                "Designing and shipping institutional platforms: Plan-Report, E-Grant, Researchers Portal, Majors Portal, the AzTU website.",
+            },
+          ].map((r) => (
+            <div key={r.org} className="border hairline p-8 rounded-sm">
+              <p className="mono text-xs text-muted-2 uppercase tracking-widest mb-3">
+                {r.role}
+              </p>
+              <h3 className="serif text-2xl tracking-tight mb-3">{r.org}</h3>
+              <p className="text-muted leading-relaxed">{r.detail}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Selected work */}
+      <Section eyebrow="Selected work" title="Production institutional systems.">
+        <div className="grid md:grid-cols-2 gap-5">
+          {featured.map((p) => (
+            <ProjectCard key={p.slug} project={p} />
+          ))}
+        </div>
+        <div className="mt-10">
+          <Link href="/projects" className="mono text-sm text-muted hover:text-foreground link-underline">
+            All projects →
+          </Link>
+        </div>
+      </Section>
+
+      {/* Stack */}
+      <Section eyebrow="Stack" title="What I build with.">
+        <div className="grid md:grid-cols-3 gap-10 border-t hairline pt-10">
+          {[
+            { label: "Frontend", items: ["React.js", "Next.js", "TypeScript", "Tailwind CSS"] },
+            { label: "Backend", items: ["Spring Boot", "FastAPI", "Django", "REST", "WebSocket"] },
+            {
+              label: "Platform",
+              items: ["PostgreSQL", "MySQL", "Docker", "Nginx", "Linux", "GitHub Actions"],
+            },
+          ].map((g) => (
+            <div key={g.label}>
+              <p className="mono text-xs text-muted-2 uppercase tracking-widest mb-5">
+                {g.label}
+              </p>
+              <ul className="space-y-2 text-foreground">
+                {g.items.map((i) => (
+                  <li key={i} className="serif text-xl">
+                    {i}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* CTA */}
+      <Section eyebrow="Next" title="Open to research collaborations and MSc supervision conversations.">
+        <p className="text-muted text-lg max-w-2xl leading-relaxed mb-8">
+          If you&apos;re a professor, lab, or recruiter working on distributed systems, research
+          software, education technology, or data infrastructure — I&apos;d like to hear from you.
+        </p>
+        <div className="flex flex-wrap gap-4">
+          <a
+            href={site.social.email}
+            className="border hairline px-5 py-2.5 text-sm hover:border-[var(--border-strong)] hover:text-accent transition-colors"
+          >
+            {site.email}
           </a>
           <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            href={site.social.linkedin}
             target="_blank"
             rel="noopener noreferrer"
+            className="border hairline px-5 py-2.5 text-sm hover:border-[var(--border-strong)] transition-colors"
           >
-            Documentation
+            LinkedIn ↗
+          </a>
+          <a
+            href={site.social.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="border hairline px-5 py-2.5 text-sm hover:border-[var(--border-strong)] transition-colors"
+          >
+            GitHub ↗
           </a>
         </div>
-      </main>
-    </div>
+      </Section>
+    </>
   );
 }
