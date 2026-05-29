@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
 import { site } from "@/lib/site";
 import { projects } from "@/lib/projects";
+import { getAllPosts } from "@/lib/blog";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const ogImage = `${site.url}/logo.png`;
+  const posts = await getAllPosts();
 
   const staticRoutes: MetadataRoute.Sitemap = site.nav.map((n) => ({
     url: `${site.url}${n.href === "/" ? "" : n.href}`,
@@ -22,5 +24,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     images: [ogImage],
   }));
 
-  return [...staticRoutes, ...projectRoutes];
+  const blogRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
+    url: `${site.url}/blog/${p.slug}`,
+    lastModified: new Date(p.date),
+    changeFrequency: "yearly",
+    priority: 0.6,
+    images: [ogImage],
+  }));
+
+  return [...staticRoutes, ...projectRoutes, ...blogRoutes];
 }

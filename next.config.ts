@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
 
 const oneYear = 60 * 60 * 24 * 365;
 
 const nextConfig: NextConfig = {
+  // Let `.mdx` files participate as pages/imports alongside the TS app.
+  pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   poweredByHeader: false,
   compress: true,
   reactStrictMode: true,
@@ -46,4 +49,17 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withMDX = createMDX({
+  options: {
+    // Plugin names are passed as strings so Turbopack (Next 16 default) can
+    // resolve them in its Rust pipeline — function references aren't supported.
+    remarkPlugins: [
+      "remark-gfm",
+      "remark-frontmatter",
+      // Exposes the YAML frontmatter as a `frontmatter` named export.
+      ["remark-mdx-frontmatter", { name: "frontmatter" }],
+    ],
+  },
+});
+
+export default withMDX(nextConfig);

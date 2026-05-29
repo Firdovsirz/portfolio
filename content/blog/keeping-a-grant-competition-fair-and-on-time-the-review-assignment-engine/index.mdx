@@ -1,0 +1,120 @@
+---
+title: "Keeping a Grant Competition Fair and On Time: The Review-Assignment Engine"
+description: "How a grant platform decides who reviews what, prevents conflicts of interest, and still finishes every competition before its deadline."
+date: "2026-05-30"
+tags: ["distributed-systems", "backend", "fastapi", "system-design", "case-study"]
+---
+
+import architecture from "./architecture.png";
+
+## The problem nobody sees until it breaks
+
+From the outside, a grant competition is a submission form and a list of results. The real system underneath it is a fairness machine, and the decision that determines whether anyone can trust the outcome is also the one nobody sees: which experts review which proposals, and on what schedule.
+
+When this goes wrong, nothing crashes. An expert ends up reviewing a proposal from their own institution. A single specialist is buried under every proposal in their field while the deadline approaches. A reviewer declines at the last minute and a proposal is left with too few reviews the week results are due. There is no error message for any of this. The competition simply becomes less fair, quietly.
+
+I built the platform end to end: proposal intake, the portals for leads and staff, the review workflow, the award decisions, and the financial disbursement. Most of that is careful CRUD. The part that was an actual engineering problem, and the part this post is about, is the engine that assigns reviewers and keeps every competition on schedule.
+
+The financial side of the system, with its tax calculations, salary-versus-outflow separation, and the grant wallet, is a hard problem in its own right. It deserves its own write-up, so I have kept it out of this one.
+
+## System at a glance
+
+<Image
+  src={architecture}
+  alt="Architecture: React client, NGINX ingress, FastAPI microservices, message queue and background worker, PostgreSQL and Redis, with Prometheus, Grafana and OpenTelemetry observability, all containerized with Docker."
+  caption="React client → NGINX ingress → FastAPI services, with a queue-backed worker, PostgreSQL + Redis, and Prometheus / Grafana / OpenTelemetry observability."
+/>
+
+## What the assignment actually has to satisfy
+
+It reads like a simple matching task. In practice it is several requirements that pull against one another:
+
+- **Conflict of interest**, a hard rule. An expert must never review a proposal from their own institution. A single violation is enough to discredit the whole competition.
+- **Coverage**, also a hard rule. Every proposal needs at least four independent reviews, occasionally five or six for higher-stakes cases. Never fewer.
+- **Expertise match.** Reviewers should receive proposals in their field, matched against the topic tags and keywords they declared.
+- **Reviewer focus.** No expert should be drowning in proposals at once. Review quality falls apart when someone is juggling five of them.
+- **The competition deadline.** Everything above is worthless if the reviews are not finished by the date the admin set.
+
+The requirements are coupled, which is what makes it interesting. Pushing expertise match to its limit concentrates proposals on the handful of people who match well, and that immediately threatens both reviewer focus and the deadline. The design is mostly about reconciling those forces.
+
+## Matching: tags first, availability second
+
+Experts choose their topic tags and keywords when they register. When a lead marks a project finished and ready for review, the system finds the experts whose tags match the proposal, and then checks each one's current state before assigning anything. A proposal goes to an expert who is free, not to one already in the middle of a review.
+
+When several experts share the same tags, proposals are spread across them rather than stacked on one. When only a single expert matches a flood of proposals, those proposals queue behind that expert instead of arriving all at once. The queue is the release valve that keeps the matching honest when load is uneven.
+
+This is logic I wrote by hand rather than a solver, and that was a deliberate decision. In a fairness context every assignment has to be explainable. When a program officer asks why a proposal went to a particular set of reviewers, the answer needs to be a clear chain of rules: the tags matched, no institutional conflict, the expert was next available. "The optimizer decided" is not an answer a grant body can defend. An auditable heuristic is worth more here than an optimum nobody can account for.
+
+## Conflict of interest, enforced from the data
+
+Conflict exclusion cannot be bolted on at the end. Experts record their institution at registration, and the assignment engine treats an institution match as a hard exclusion: an expert is never even eligible for a proposal from their own institution. The check lives where the assignment decision is made, not as a warning in the interface, because the interface is the easiest place for any rule to be worked around.
+
+The point of all this is plain. The system exists so that reviews cannot be steered by institutional ties or by a personal relationship between a project lead and a reviewer. Transparency is the whole product, and the matching engine is how that transparency is actually delivered.
+
+One scope note worth being honest about: the conflict check is institution-based, because the institution is the relationship the system can verify from registration data. It does not try to infer informal relationships it has no data for.
+
+## The decision I am most proud of: one review at a time
+
+The obvious way to move fast is to hand each expert all of their matching proposals at once. I deliberately did the opposite, and the reasoning behind that is the core of the system.
+
+Each expert reviews one proposal at a time. The rest queue. They finish one, then move to the next. The reason is review quality: an expert looking at a single proposal reviews it properly, while an expert holding five reviews all of them poorly. The one-at-a-time rule protects the thing the entire platform exists to produce, which is good reviews.
+
+The obvious objection is speed. If reviews are sequential, surely the competition drags. That is exactly the problem the scheduler solves. Experts declare the review hours they have available during the day. The system takes the competition deadline that the admin set and assigns a per-proposal deadline to each queued review, working backward from that final deadline and fitting it to the expert's available hours. Sequential reviewing never overruns the competition, because every proposal carries a deadline chosen to guarantee the whole queue clears in time.
+
+That is the part I am most pleased with. I did not trade quality for speed or speed for quality. Focused one-at-a-time review and on-time completion stop being a tradeoff the moment the scheduler works backward from the constraint that actually matters.
+
+## What happens when it breaks
+
+The interesting engineering is in the unhappy paths.
+
+When an expert declines, the system sends the notification by email and immediately tries to assign the next available matching expert, applying the same conflict and availability rules. The proposal is not left sitting under-reviewed.
+
+When no other expert matches, the system does not quietly under-assign. It escalates to the admin through both an in-platform notification and a high-priority email, and it keeps surfacing the action until a reviewer is in place. Failing loudly to a human is the right behavior when the system genuinely cannot satisfy a hard rule on its own. A silent gap in coverage is the worst outcome a fairness system can produce.
+
+When an expert's declared hours cannot fit their whole queue before the deadline, a rebalancing job redistributes the overflow to the next-best-matched available experts. If the confidence in that redistribution drops below a threshold, it alerts the admin rather than forcing a weak match.
+
+## Scale: what actually broke, and what fixed it
+
+The backend is FastAPI behind an NGINX ingress, with PostgreSQL for storage and Redis for a small amount of caching, all containerized with Docker. The claim worth making is not that it scales. It is where it stopped scaling and why, which is the only version of this story that teaches anything.
+
+Load testing ran in a staging environment sized to mirror production, not on a laptop. The FastAPI services sat behind NGINX, PostgreSQL was provisioned close to production sizing, and k6 drove the load from separate VM-based runners. There were three scenarios: a soak test ramping to 1,000 concurrent users over five minutes and holding for thirty; a heavier ramp to 2,000 users over ten minutes; and a spike test that jumped to 1,000 users in 30 to 45 seconds to reproduce the real failure mode, the deadline burst when everyone submits at once.
+
+The first thing to break was not the application code and not the load balancer. NGINX distributed traffic correctly the whole time. The bottleneck was database connection-pool saturation. Somewhere around 1,200 to 1,500 concurrent users, p95 latency climbed from roughly 180ms to roughly 900ms, the pool began throwing exhaustion warnings, and the submission endpoints slowed down, the file-metadata and application-save flow worst of all. The problem was clearly downstream of an otherwise healthy app and balancer.
+
+Four changes fixed it, in rough order of impact. I tuned the connection-pool size and timeouts so it stopped exhausting under burst. I added the indexes that were missing on the hot paths, application-lookup-by-user and the competition-filtering queries. I removed the N+1 query patterns in the submission flow. And I added light Redis caching for the competition metadata that gets read constantly.
+
+The results under the same load:
+
+| Metric | Before | After |
+|---|---|---|
+| p95 latency under load | ~900ms | ~220–280ms |
+| Error rate at peak | ~2–3% | &lt;0.2% |
+| Stable concurrency | ~1,200 users | ~2,500+ users |
+
+For reference, the 500-user baseline ran at roughly 120 to 150ms average response, around 180ms p95, near-zero errors, and 1,800 to 2,200 requests per second. After the optimizations, 2,000 users held p95 in the 280 to 320ms range with error rate under 0.2 percent, and it degraded in a controlled way past about 2,500.
+
+The lesson matters more than the numbers. Under bursty load the database connection pool gives out before the application does, and that is not something you learn by reading about it. You learn it by running the spike test that mirrors your actual worst case.
+
+## Observability
+
+For a fairness system, logging is part of the trust guarantee rather than just an operational nicety. Every assignment records why it happened: which tags matched, that the institution check passed, that the expert was next in line. That trail is the payoff for choosing explainable logic over a black box, because any assignment in any competition can be accounted for after the fact. Runtime behavior runs through Prometheus and Grafana, with OpenTelemetry tracing on the request paths, and that tracing is how the pool saturation was located rather than guessed at.
+
+## Trade-offs, and what I would do differently
+
+One-at-a-time reviewing depends on having enough experts per topic. If a popular topic has a single matching reviewer and a heavy load of proposals, the queue is long no matter how good the scheduling is. The real fix there is recruiting reviewer depth, which the software can flag but cannot solve.
+
+The matching is a heuristic and is not provably optimal. I accepted that on purpose, because explainability and auditability matter more than optimality in a competition that has to be defensible.
+
+The biggest thing I would change is the scheduling itself. It currently runs as a periodic batch. I would rebuild it as an event-driven, queue-based system so that rebalancing happens in real time on each decline or new submission, instead of waiting for the next recalculation pass. That single change would make the unhappy paths react immediately rather than on a cycle.
+
+## What this demonstrates
+
+I took the least glamorous and most consequential part of a grant platform, the question of who reviews what and by when, and treated it as the problem it actually is: a set of conflicting requirements, a matching design that stays explainable, conflict of interest enforced from the data, a scheduler that makes focused review compatible with finishing on time, and a scaling claim backed by finding and fixing the real first bottleneck under load. The rest of the platform works, but this is the part that needed judgment.
+
+For a funding body, that judgment is the product. A competition that runs fast but is not fair is worse than useless.
+
+---
+
+**Stack:** FastAPI microservices, React frontend, PostgreSQL, Redis, a message queue with a background worker, Docker, and NGINX ingress; load-tested with k6; observability through Prometheus, Grafana, and OpenTelemetry.
+
+**Source code:** Private repository. Code, architecture notes, and the k6 load-test scripts are available on request.

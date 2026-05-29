@@ -1,0 +1,96 @@
+---
+title: "Scoring Without a Human: A Rubric-Constrained LLM Pipeline for University Plan Reports"
+description: "How Azerbaijan Technical University assesses thousands of yearly plan reports with an LLM instead of a human evaluator, and the engineering that makes those scores fair, repeatable, and auditable."
+date: "2026-05-30"
+tags: ["llm", "evaluation", "system-design", "fastapi", "case-study"]
+---
+
+import architecture from "./architecture.png";
+
+## The problem this platform exists to solve
+
+At the start of each academic year, every structural unit at Azerbaijan Technical University, including teachers, faculties, departments, and administrative units, files a plan. Each plan states the work that unit intends to complete that year: the activity types, the goal, and a clear description. Over the course of the year, each unit uploads a report document describing what was actually done, and every report is due by a single deadline that the admin sets for everyone.
+
+The hard part was never the forms. It was the assessment. Someone has to read these reports and judge how well each plan was carried out, and the moment a human does that judging at scale, two problems appear. The first is volume: no person can fairly read and grade the full set of reports the university produces in a year. The second, and the more serious one, is bias. A human evaluator who knows the department, or the person who wrote the report, cannot fully separate that familiarity from the score. A grade given out of friendship, or withheld out of friction between an admin and a unit, is exactly the kind of thing the assessment is supposed to prevent.
+
+So the design decision at the center of this platform is deliberately uncomfortable: there is no human in the scoring path. Every report is scored from 0 to 100 by an LLM, against the plan it belongs to. The Quality Assurance department uses the result to track real work across the whole university, with assessments that are the same regardless of who reads them. The platform is in production use at the university ([plan-report.aztu.edu.az](https://plan-report.aztu.edu.az)). This post is about how that scoring is built, and why I trust it enough to remove the human.
+
+## System at a glance
+
+<Image
+  src={architecture}
+  alt="Architecture: web client and API gateway with role-based access; Plans, Reports, and Notifications services; an AI assessment pipeline that ingests the document, chunks it, scores each chunk against a rubric, and reduces to a final score with breakdown and justification; PostgreSQL, object storage, and an audit log with admin override and appeal."
+  caption="Web client → API gateway (role-based access) → Plans / Reports / Notifications services, with an LLM assessment pipeline (ingest → chunk → rubric-score → reduce) over PostgreSQL, object storage, and an audit log with admin override and appeal."
+/>
+
+## The first decision: the LLM is an evaluator, not an assistant
+
+The model behind the scoring is a GPT-4-class model accessed over an API. I chose it for instruction-following and reliable structured output rather than for conversational ability, because the system never talks to anyone. It receives a plan and a report, applies a rubric, and returns a number with its reasoning. Treating the model as a constrained evaluation engine rather than a chat assistant is the framing that shapes every other decision below.
+
+The reason that framing matters is that a free-form "rate this report" prompt produces exactly the unfairness the platform was built to remove. Left to decide its own criteria, a model scores inconsistently and inexplicably. The engineering is in constraining it.
+
+## How a report reaches a score
+
+A report document does not go to the model in one piece. It moves through a pipeline.
+
+First, ingestion. Uploaded PDF and Word files pass through a preprocessing step that extracts the text, strips headers and footers, normalizes formatting, and preserves the section structure where the document provides it.
+
+Second, chunking. Reports are often long enough to exceed a comfortable context window, so the text is split into semantic chunks, by heading where headings exist and by fixed token windows otherwise. This keeps each unit of evaluation small enough that the model attends to all of it rather than skimming a wall of text.
+
+Third, a map-reduce scoring pass. In the map stage, each chunk is scored against the rubric on its own, extracting signals like completeness, relevance, and evidence quality. In the reduce stage, a second pass aggregates those chunk-level results into a single score from 0 to 100. Splitting the work this way avoids context overflow on long reports and, as the validation later showed, produces more stable scores than asking the model to judge the whole document in one shot.
+
+## The rubric is fixed, not discovered by the model
+
+The model is never asked to invent its own grading criteria. It receives a fixed rubric with explicit bands:
+
+- 0 to 20: missing, irrelevant, or no evidence of work.
+- 21 to 40: minimal completion, weak alignment to the plan.
+- 41 to 60: partial completion with some evidence.
+- 61 to 80: mostly complete, well aligned.
+- 81 to 100: fully complete, with strong evidence and clear proof of execution.
+
+Within those bands the score is driven by a small set of factors: how well the report aligns with the activity type that was actually planned, whether there is evidence of execution rather than just description, the depth of the reporting, completeness against the plan's stated goals, and how traceable the claims are. Fixing the rubric is what makes two reports of similar quality land on similar scores, regardless of who wrote them or when they were graded.
+
+## The output is a number with its reasoning
+
+The model does not return a bare score. It returns the score, a breakdown across the rubric dimensions (alignment, completeness, evidence quality, clarity), and a short written justification that points to what was strong and what was missing.
+
+That justification is not decoration. For a system that removes the human evaluator, the written reasoning is what makes the result defensible. The QA department can see why a report scored what it did. A unit that disagrees has something concrete to appeal against. And the most common objection to AI grading, that it is an unaccountable black box, loses its force when every score arrives with its reasons attached.
+
+## Validation: the part that earns the right to remove the human
+
+A scoring system is only as trustworthy as its validation, so before this replaced any human judgment it went through a pilot. I scored a set of roughly 80 to 150 historical reports, drawn from across faculties and administrative units, and deliberately mixed in strong, average, and thin reports so the test was not just easy cases.
+
+Against human evaluator scores as a baseline, the AI scores landed within about 5 to 10 points on average, and the ordering held: reports that humans ranked as strong or weak were ranked the same way by the model. The interesting finding was in the borderline cases, where the AI was actually more consistent than the humans, because the human scores there carried the personal and departmental familiarity the platform was built to factor out.
+
+I also tested consistency directly, because LLMs are non-deterministic and a grading system that gives different answers to the same report is worthless. Scoring the same reports five to ten times, with temperature set near zero, a fixed system prompt, enforced structured output, and averaging across the chunk-aggregation stage, the score varied by roughly 1 to 3 points, with rare outliers up to 5 on long ambiguous reports. That is tight enough that a unit's score does not depend on which run happened to grade it.
+
+## Resisting the obvious attack
+
+Any scoring system creates an incentive to game it, and the obvious attack here is to stuff a report with keywords lifted from the plan, pad it with long irrelevant text, or write in a confident "AI-sounding" register that looks substantial and says nothing. Treating that as a real threat rather than a hypothetical was part of the design.
+
+The defenses work together. The model is prompted to ask whether an activity was actually executed or merely mentioned, and keyword repetition without supporting evidence is penalized rather than rewarded. High scores require concrete outcomes, with numbers, deliverables, or artifacts and a consistent timeline. Repetitive or verbose passages that add no new information lower the score instead of inflating it. And a mismatch between the activity type that was planned and the one actually reported is itself a penalty. The aim throughout is to reward evidence of work rather than the appearance of it.
+
+## No human scoring, but real governance
+
+Removing the human from scoring is not the same as removing accountability, and the governance layer is what keeps those two things separate.
+
+There is no human in the main scoring pipeline, by design, because that is the whole point. But an admin can review any score together with its justification and override it, and that override is logged rather than silent. A unit that disagrees can request a re-evaluation, which re-runs the scoring in an audit mode. And every score is stored with the things needed to reproduce and defend it later: the prompt version, the model version, a hash of the input, and the justification the model produced. The result is accountability without reintroducing the bias the system was built to remove.
+
+## Trade-offs, and what I would do differently
+
+The honest limits are worth stating. The system depends on a third-party model API, which means scores are tied to a specific model version, and that is exactly why the model and prompt versions are stored with every score: a model upgrade should never silently change what last year's report would have scored. The pilot validation was a few dozen reports across one university, which is enough to justify deployment there but not enough to claim the rubric generalizes to every institution unchanged. And while the anti-gaming defenses handle the obvious attacks, a determined adversary writing genuinely plausible but false evidence is a harder problem that text-only scoring cannot fully close.
+
+If I were extending it, the most valuable next step would be a continuous calibration loop: periodically re-score a held-out set of human-graded reports to detect drift when the underlying model changes, rather than trusting that this year's model behaves like last year's. That turns the one-time pilot into an ongoing guarantee.
+
+## What this demonstrates
+
+The interesting engineering here was not calling an LLM. It was making an LLM's judgment trustworthy enough to stand in for a human, in a context where fairness is the entire reason the system exists. That meant constraining the model to a fixed rubric, structuring long documents through a map-reduce pass, forcing every score to carry its reasoning, defending against the obvious ways people would try to inflate their grades, validating the scores against human baselines and against themselves, and wrapping the whole thing in audit logs and an appeal path. The model is the easy part. The pipeline around it is the work.
+
+---
+
+**Live deployment:** [plan-report.aztu.edu.az](https://plan-report.aztu.edu.az) — in production use at Azerbaijan Technical University.
+
+**Stack:** GPT-4-class LLM via API for evaluation, document ingestion for PDF and DOCX, semantic chunking with map-reduce scoring, FastAPI backend, PostgreSQL, object storage for documents, platform and email notifications, and a versioned audit log for every score.
+
+**Source code:** Private repository. Architecture notes and the evaluation methodology are available on request.
