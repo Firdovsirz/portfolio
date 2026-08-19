@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { JsonLd } from "@/components/json-ld";
 import { getAllPosts, getPostMeta, formatDate } from "@/lib/blog";
+import { canonical } from "@/lib/site";
+import { blogPostingLd, breadcrumbLd, graph } from "@/lib/schema";
 
 // Only prerender published posts; an unknown/draft slug 404s in production.
 export async function generateStaticParams() {
@@ -20,10 +23,21 @@ export async function generateMetadata({
   const { slug } = await params;
   const meta = await getPostMeta(slug);
   if (!meta) return {};
+  const path = `/blog/${slug}`;
   return {
-    title: meta.title,
-    description: meta.summary,
+    title: meta.seoTitle,
+    description: meta.seoDescription,
     keywords: meta.tags,
+    alternates: canonical(path),
+    openGraph: {
+      type: "article",
+      url: path,
+      title: meta.seoTitle,
+      description: meta.seoDescription,
+      publishedTime: meta.date,
+      authors: ["Firdovsi Rzaev"],
+      tags: meta.tags,
+    },
   };
 }
 
@@ -38,8 +52,19 @@ export default async function BlogPostPage({
 
   const { default: Post } = await import(`@/content/blog/${slug}/index.mdx`);
 
+  const structuredData = graph(
+    blogPostingLd(meta),
+    breadcrumbLd([
+      { name: "Home", path: "/" },
+      { name: "Blog", path: "/blog" },
+      { name: meta.title, path: `/blog/${slug}` },
+    ]),
+  );
+
   return (
     <>
+      <JsonLd data={structuredData} />
+
       <header className="mx-auto max-w-3xl px-6 lg:px-10 pt-20 md:pt-28 pb-10">
         <Link
           href="/blog"
@@ -70,7 +95,7 @@ export default async function BlogPostPage({
               src={meta.cover}
               alt={meta.title}
               fill
-              priority
+              preload
               sizes="(max-width: 768px) 100vw, 768px"
               className="object-cover"
             />

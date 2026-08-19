@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { PageHeader, Section } from "@/components/section";
 import { ContactForm } from "@/components/contact-form";
-import { site } from "@/lib/site";
+import { EmailLink } from "@/components/email-link";
+import { canonical, site } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: canonical("/contact"),
   title: "Contact",
   description:
     "Get in touch with Firdovsi Rzaev — for engineering work, research collaborations, and projects in distributed systems, edtech, and research infrastructure.",
@@ -27,12 +29,7 @@ export default function ContactPage() {
           <aside className="md:col-span-5 space-y-10">
             <div>
               <p className="mono text-xs text-muted-2 uppercase tracking-widest mb-3">Email</p>
-              <a
-                href={site.social.email}
-                className="serif text-xl link-underline hover:text-accent"
-              >
-                {site.email}
-              </a>
+              <EmailLink className="serif text-xl link-underline hover:text-accent" />
             </div>
             <div>
               <p className="mono text-xs text-muted-2 uppercase tracking-widest mb-3">Social</p>

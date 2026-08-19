@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { PageHeader, Section } from "@/components/section";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: canonical("/about"),
   title: "About",
   description:
-    "Firdovsi Rzaev is a software engineer and team lead building production institutional systems, with research interests in distributed systems, education technology, and research infrastructure.",
+    "Firdovsi Rzaev — software engineer and team lead in Baku, building production institutional systems for universities, editorial boards, and commerce teams.",
 };
 
 export default function AboutPage() {

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { PageHeader, Section } from "@/components/section";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: canonical("/experience"),
   title: "Experience",
   description:
     "Professional experience of Firdovsi Rzaev — Software Developer Team Lead at Dithari and Software Developer at Azerbaijan Technical University.",

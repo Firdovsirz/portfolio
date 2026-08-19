@@ -21,7 +21,7 @@ export function Nav() {
             className="flex items-center gap-3 group"
             aria-label="Firdovsi Rzaev — Home"
           >
-            <BrandLogo height={28} priority />
+            <BrandLogo height={28} preload />
             <span className="serif text-lg tracking-tight">Firdovsi Rzaev</span>
           </Link>
 

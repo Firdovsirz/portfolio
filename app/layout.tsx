@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { ThemeScript } from "@/components/theme-script";
-import { site } from "@/lib/site";
+import { Analytics } from "@/components/analytics";
+import { JsonLd } from "@/components/json-ld";
+import { canonical, site } from "@/lib/site";
+import { graph, localBusinessLd, personLd, profilePageLd, websiteLd } from "@/lib/schema";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -63,14 +65,16 @@ export const metadata: Metadata = {
     "AzTU",
     "Dithari",
     "Buyology",
+    "Machine Science journal",
+    "Academic publishing platform",
+    "Peer review system",
     "Distributed Systems",
     "Education Technology",
     "Research Infrastructure",
     "Software Developer Baku",
   ],
-  alternates: {
-    canonical: site.url,
-  },
+  // Every route sets its own canonical; this is the home-page default only.
+  alternates: canonical("/"),
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -112,73 +116,10 @@ export const metadata: Metadata = {
   verification: {
     // google: "",
     // yandex: "",
-    // other: { me: ["mailto:firdovsirz@gmail.com", site.social.linkedin] },
   },
 };
 
-const personLd = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "@id": `${site.url}/#person`,
-  name: "Firdovsi Rzaev",
-  alternateName: ["Firdovsi", "Rzaev", "Firdovsi Rzayev"],
-  givenName: "Firdovsi",
-  familyName: "Rzaev",
-  url: site.url,
-  image: `${site.url}/logo.png`,
-  email: site.email,
-  jobTitle: "Software Engineer",
-  description: site.description,
-  worksFor: [
-    {
-      "@type": "Organization",
-      name: "Azerbaijan Technical University",
-      url: "https://aztu.edu.az",
-    },
-    {
-      "@type": "Organization",
-      name: "Dithari",
-    },
-  ],
-  alumniOf: {
-    "@type": "CollegeOrUniversity",
-    name: "Azerbaijan Technical University",
-    url: "https://aztu.edu.az",
-  },
-  sameAs: [site.social.github, site.social.linkedin],
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Baku",
-    addressCountry: "AZ",
-  },
-  knowsAbout: [
-    "Software Engineering",
-    "Distributed Systems",
-    "Education Technology",
-    "Research Software Engineering",
-    "Research Infrastructure",
-    "Data Systems",
-  ],
-};
-
-const websiteLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "@id": `${site.url}/#website`,
-  url: site.url,
-  name: site.name,
-  description: site.description,
-  inLanguage: "en",
-  publisher: { "@id": `${site.url}/#person` },
-};
-
-const orgLd = {
-  "@context": "https://schema.org",
-  "@type": "ProfilePage",
-  "@id": `${site.url}/#profilepage`,
-  url: site.url,
-  mainEntity: { "@id": `${site.url}/#person` },
-};
+const siteLd = graph(personLd, websiteLd, profilePageLd, localBusinessLd);
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -189,32 +130,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       className={`${inter.variable} ${fraunces.variable} ${geistMono.variable} h-full`}
     >
       <head>
+        {/* next/font self-hosts the font files with the rest of the static
+            assets, so the browser never contacts fonts.gstatic.com — a
+            preconnect or dns-prefetch to it would only cost a wasted
+            connection on every page load. */}
         <ThemeScript />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        <JsonLd data={siteLd} />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <Script
-          id="ld-person"
-          type="application/ld+json"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(personLd) }}
-        />
-        <Script
-          id="ld-website"
-          type="application/ld+json"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }}
-        />
-        <Script
-          id="ld-profile"
-          type="application/ld+json"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}
-        />
         <Nav />
         <main className="flex-1">{children}</main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );

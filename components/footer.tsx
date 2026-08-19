@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EmailLink } from "@/components/email-link";
 import { site } from "@/lib/site";
 
 export function Footer() {
@@ -15,9 +16,7 @@ export function Footer() {
           </div>
 
           <div className="flex flex-col gap-1 text-sm text-muted md:items-end">
-            <a href={site.social.email} className="link-underline hover:text-foreground">
-              {site.email}
-            </a>
+            <EmailLink className="link-underline hover:text-foreground" />
             <a
               href={site.social.github}
               target="_blank"

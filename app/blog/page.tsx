@@ -3,8 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { PageHeader, Section } from "@/components/section";
 import { getAllPosts, formatDate } from "@/lib/blog";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: canonical("/blog"),
   title: "Blog",
   description:
     "Engineering write-ups by Firdovsi Rzaev on building production institutional systems — review-assignment engines, attendance, data reconciliation, and more.",

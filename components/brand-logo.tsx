@@ -3,11 +3,11 @@ import logo from "@/public/logo.png";
 
 export function BrandLogo({
   height = 28,
-  priority = false,
+  preload = false,
   className = "",
 }: {
   height?: number;
-  priority?: boolean;
+  preload?: boolean;
   className?: string;
 }) {
   // Keep aspect ratio of source 677x369.
@@ -18,7 +18,7 @@ export function BrandLogo({
       alt="Firdovsi Rzaev"
       width={width}
       height={height}
-      priority={priority}
+      preload={preload}
       placeholder="blur"
       className={className}
     />

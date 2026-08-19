@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Section } from "@/components/section";
+import { Faq } from "@/components/faq";
+import { JsonLd } from "@/components/json-ld";
 import { projects } from "@/lib/projects";
+import { canonical, site } from "@/lib/site";
+import { breadcrumbLd, faqLd, graph, projectLd } from "@/lib/schema";
 
 export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
@@ -14,9 +19,28 @@ export async function generateMetadata(
   const { slug } = await params;
   const project = projects.find((p) => p.slug === slug);
   if (!project) return {};
+
+  const path = `/projects/${project.slug}`;
+  const image = project.ogImage ?? "/logo.png";
+
   return {
     title: project.name,
-    description: project.summary,
+    description: project.metaDescription ?? project.summary,
+    keywords: [project.name, project.client, ...project.stack],
+    alternates: canonical(path),
+    openGraph: {
+      type: "article",
+      url: path,
+      title: `${project.name} — ${project.client}`,
+      description: project.summary,
+      images: [{ url: image, alt: project.hero?.alt ?? project.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${project.name} — ${project.client}`,
+      description: project.summary,
+      images: [image],
+    },
   };
 }
 
@@ -27,12 +51,27 @@ export default async function ProjectPage(
   const project = projects.find((p) => p.slug === slug);
   if (!project) notFound();
 
+  const path = `/projects/${project.slug}`;
+  const structuredData = graph(
+    projectLd(project),
+    breadcrumbLd([
+      { name: "Home", path: "/" },
+      { name: "Projects", path: "/projects" },
+      { name: project.name, path },
+    ]),
+    ...(project.faq?.length ? [faqLd(project.faq, path)] : []),
+  );
+
   return (
     <>
+      <JsonLd data={structuredData} />
+
       <header className="mx-auto max-w-6xl px-6 lg:px-10 pt-20 md:pt-28 pb-12">
-        <Link href="/projects" className="mono text-xs text-muted hover:text-foreground link-underline">
-          ← All projects
-        </Link>
+        <nav aria-label="Breadcrumb">
+          <Link href="/projects" className="mono text-xs text-muted hover:text-foreground link-underline">
+            ← All projects
+          </Link>
+        </nav>
         <p className="mono text-xs text-accent tracking-widest uppercase mt-8 mb-5">
           {project.client} · {project.status}
         </p>
@@ -46,7 +85,36 @@ export default async function ProjectPage(
           <span>Role · <span className="text-muted">{project.role}</span></span>
           <span>Year · <span className="text-muted">{project.year}</span></span>
         </div>
+        {project.liveUrl && (
+          <div className="mt-8">
+            <a
+              href={project.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block border hairline px-5 py-2.5 text-sm hover:border-[var(--border-strong)] hover:text-accent transition-colors"
+            >
+              Visit {project.liveUrl.replace(/^https?:\/\//, "")} ↗
+            </a>
+          </div>
+        )}
       </header>
+
+      {project.hero && (
+        <div className="mx-auto max-w-6xl px-6 lg:px-10">
+          <figure className="border hairline rounded-sm overflow-hidden bg-[var(--surface-2)]">
+            <Image
+              src={project.hero.src}
+              alt={project.hero.alt}
+              sizes="(min-width: 1024px) 1120px, 100vw"
+              placeholder="blur"
+              className="w-full h-auto"
+            />
+          </figure>
+          <figcaption className="mono text-xs text-muted-2 uppercase tracking-widest mt-3">
+            {project.hero.caption}
+          </figcaption>
+        </div>
+      )}
 
       <Section eyebrow="Overview">
         <div className="space-y-4 text-lg leading-relaxed text-muted max-w-3xl">
@@ -56,14 +124,23 @@ export default async function ProjectPage(
         </div>
       </Section>
 
-      {/* Architecture placeholder */}
+      {project.facts && project.facts.length > 0 && (
+        <Section eyebrow="At a glance">
+          <dl className="grid md:grid-cols-2 gap-x-10 gap-y-6 max-w-4xl">
+            {project.facts.map((fact) => (
+              <div key={fact.label} className="border-t hairline pt-4">
+                <dt className="mono text-xs text-muted-2 uppercase tracking-widest mb-2">
+                  {fact.label}
+                </dt>
+                <dd className="text-foreground leading-relaxed">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </Section>
+      )}
+
       <Section eyebrow="Architecture">
-        <div className="border hairline aspect-[16/9] flex items-center justify-center bg-[var(--surface)] rounded-sm">
-          <p className="mono text-xs text-muted-2 uppercase tracking-widest">
-            Architecture diagram — placeholder
-          </p>
-        </div>
-        <p className="text-muted leading-relaxed mt-6 max-w-3xl">{project.systemDesign}</p>
+        <p className="text-muted text-lg leading-relaxed max-w-3xl">{project.systemDesign}</p>
       </Section>
 
       <Section eyebrow="Features">
@@ -100,19 +177,66 @@ export default async function ProjectPage(
         </div>
       </Section>
 
-      <Section eyebrow="Screenshots">
-        <div className="grid md:grid-cols-2 gap-5">
-          {[1, 2].map((i) => (
-            <div
-              key={i}
-              className="border hairline aspect-[4/3] flex items-center justify-center bg-[var(--surface)] rounded-sm"
+      {project.gallery && project.gallery.length > 0 && (
+        <Section eyebrow="Screenshots">
+          <div className="grid md:grid-cols-2 gap-x-6 gap-y-10">
+            {project.gallery.map((shot) => (
+              <figure key={shot.caption}>
+                <div className="border hairline rounded-sm overflow-hidden bg-[var(--surface-2)]">
+                  <Image
+                    src={shot.src}
+                    alt={shot.alt}
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                    placeholder="blur"
+                    className="w-full h-auto"
+                  />
+                </div>
+                <figcaption className="mono text-xs text-muted-2 uppercase tracking-widest mt-3">
+                  {shot.caption}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {project.faq && project.faq.length > 0 && (
+        <Faq
+          entries={project.faq}
+          eyebrow="Questions"
+          title={`About the ${project.name}.`}
+          id="project-faq"
+        />
+      )}
+
+      <Section eyebrow="Next">
+        <div className="flex flex-wrap gap-4">
+          <Link
+            href="/projects"
+            className="border hairline px-5 py-2.5 text-sm hover:border-[var(--border-strong)] hover:text-accent transition-colors"
+          >
+            ← All projects
+          </Link>
+          <Link
+            href="/contact"
+            className="border hairline px-5 py-2.5 text-sm hover:border-[var(--border-strong)] transition-colors"
+          >
+            Ask about this work
+          </Link>
+          {project.liveUrl && (
+            <a
+              href={project.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-2.5 text-sm text-muted hover:text-foreground transition-colors"
             >
-              <p className="mono text-xs text-muted-2 uppercase tracking-widest">
-                Screenshot {i} — placeholder
-              </p>
-            </div>
-          ))}
+              Open the live system ↗
+            </a>
+          )}
         </div>
+        <p className="sr-only">
+          {project.name} was built by {site.name} for {project.client}.
+        </p>
       </Section>
     </>
   );

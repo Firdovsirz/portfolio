@@ -17,7 +17,6 @@ function resolveEffective(mode: Mode): "light" | "dark" {
 function applyTheme(mode: Mode) {
   const effective = resolveEffective(mode);
   document.documentElement.setAttribute("data-theme", effective);
-  document.documentElement.style.colorScheme = effective;
 }
 
 export function ThemeToggle() {

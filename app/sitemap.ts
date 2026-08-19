@@ -5,7 +5,7 @@ import { getAllPosts } from "@/lib/blog";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const ogImage = `${site.url}/logo.png`;
+  const defaultImage = `${site.url}/logo.png`;
   const posts = await getAllPosts();
 
   const staticRoutes: MetadataRoute.Sitemap = site.nav.map((n) => ({
@@ -13,15 +13,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: now,
     changeFrequency: "monthly",
     priority: n.href === "/" ? 1 : 0.8,
-    images: [ogImage],
+    images: [defaultImage],
   }));
 
   const projectRoutes: MetadataRoute.Sitemap = projects.map((p) => ({
     url: `${site.url}/projects/${p.slug}`,
     lastModified: now,
     changeFrequency: "monthly",
-    priority: 0.7,
-    images: [ogImage],
+    // Live systems with a full write-up outrank the ones still in design.
+    priority: p.status === "Production" ? 0.7 : 0.5,
+    // Point image discovery at the project's own screenshots where they exist.
+    images: p.gallery?.length
+      ? [
+          ...(p.ogImage ? [`${site.url}${p.ogImage}`] : []),
+          ...p.gallery.map((shot) => `${site.url}${shot.path}`),
+        ]
+      : [defaultImage],
   }));
 
   const blogRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
@@ -29,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(p.date),
     changeFrequency: "yearly",
     priority: 0.6,
-    images: [ogImage],
+    images: [p.cover ? `${site.url}${p.cover.src}` : defaultImage],
   }));
 
   return [...staticRoutes, ...projectRoutes, ...blogRoutes];

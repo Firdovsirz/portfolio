@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { PageHeader, Section } from "@/components/section";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: canonical("/education"),
   title: "Education",
   description:
-    "Education of Firdovsi Rzaev — BSc Computer Science, Azerbaijan Technical University.",
+    "Education of Firdovsi Rzaev — BSc Computer Science at Azerbaijan Technical University in Baku, alongside full-time work on production institutional systems.",
 };
 
 export default function EducationPage() {

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { PageHeader, Section } from "@/components/section";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: canonical("/research"),
   title: "Research",
   description:
-    "Research interests of Firdovsi Rzaev — research software engineering, distributed systems, education technology, AI-assisted educational systems, data systems, and research infrastructure.",
+    "Research interests of Firdovsi Rzaev: research software engineering, distributed systems, education technology, AI-assisted learning, and data systems.",
 };
 
 const interests = [

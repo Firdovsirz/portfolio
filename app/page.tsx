@@ -2,14 +2,21 @@ import Link from "next/link";
 import { Section } from "@/components/section";
 import { ProjectCard } from "@/components/project-card";
 import { TrustedBy } from "@/components/trusted-by";
+import { EmailLink } from "@/components/email-link";
+import { Faq } from "@/components/faq";
+import { JsonLd } from "@/components/json-ld";
 import { projects } from "@/lib/projects";
 import { site } from "@/lib/site";
+import { siteFaq } from "@/lib/faq";
+import { faqLd, graph } from "@/lib/schema";
 
 export default function HomePage() {
   const featured = projects.filter((p) => p.status === "Production").slice(0, 4);
 
   return (
     <>
+      <JsonLd data={graph(faqLd(siteFaq, "/"))} />
+
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-6 lg:px-10 pt-24 md:pt-36 pb-24 md:pb-32">
         <p className="mono text-xs text-accent tracking-widest uppercase mb-6">
@@ -29,7 +36,10 @@ export default function HomePage() {
           </p>
           <p className="text-muted text-lg leading-relaxed">
             My work spans distributed systems, education technology, and research infrastructure —
-            the kind of platforms institutions quietly rely on every day.
+            the kind of platforms institutions quietly rely on every day. Academic planning and
+            reporting, grant competitions and expert review, an open-access journal with a
+            double-blind peer review pipeline, researcher profiles reconciled across Scopus, Web of
+            Science and Google Scholar.
           </p>
         </div>
 
@@ -71,7 +81,7 @@ export default function HomePage() {
               org: "Azerbaijan Technical University",
               role: "Software Developer",
               detail:
-                "Designing and shipping institutional platforms: Plan-Report, E-Grant, Researchers Portal, Majors Portal, the AzTU website.",
+                "Designing and shipping institutional platforms: the Machine Science journal, Plan-Report, E-Grant, Researchers Portal, Majors Portal, the AzTU website.",
             },
           ].map((r) => (
             <div key={r.org} className="border hairline p-8 rounded-sm">
@@ -96,6 +106,31 @@ export default function HomePage() {
           <Link href="/projects" className="mono text-sm text-muted hover:text-foreground link-underline">
             All projects →
           </Link>
+        </div>
+      </Section>
+
+      {/* How the work is approached */}
+      <Section eyebrow="Approach" title="What institutional engineering actually demands.">
+        <div className="grid md:grid-cols-3 gap-10 md:gap-12 border-t hairline pt-10">
+          {[
+            {
+              heading: "Model the institution, not the screen",
+              body: "A faculty is not a folder and a peer review is not a status field. Before any interface exists, the organisational hierarchy, the review states, and the publication units have to be modelled the way the institution genuinely works — including the parts that vary between one faculty, journal, or competition and the next. Get that wrong and every feature afterwards is a workaround.",
+            },
+            {
+              heading: "Design for the record, not the demo",
+              body: "These systems are systems of record. A grant decision, a peer review, a published article, a submitted yearly plan — each has to remain reconstructable years later, after the org chart changed, after the reviewers moved on, after the rubric was revised. That means versioned definitions, explicit state transitions, and an audit trail that is a first-class feature rather than a log file.",
+            },
+            {
+              heading: "Ship something people can run",
+              body: "Institutional software is maintained by whoever inherits it. So the deployment story matters as much as the architecture: containerised services, reproducible environments, boring dependency choices, and documentation an incoming engineer can act on. The measure of the work is whether it is still running — and still being changed safely — long after handover.",
+            },
+          ].map((c) => (
+            <article key={c.heading}>
+              <h3 className="serif text-2xl tracking-tight mb-4">{c.heading}</h3>
+              <p className="text-muted leading-relaxed">{c.body}</p>
+            </article>
+          ))}
         </div>
       </Section>
 
@@ -126,6 +161,8 @@ export default function HomePage() {
         </div>
       </Section>
 
+      <Faq entries={siteFaq} eyebrow="FAQ" title="Frequently asked questions." />
+
       {/* CTA */}
       <Section eyebrow="Next" title="Open to engineering work and research collaborations.">
         <p className="text-muted text-lg max-w-2xl leading-relaxed mb-8">
@@ -133,12 +170,13 @@ export default function HomePage() {
           or data infrastructure — I&apos;d like to hear from you.
         </p>
         <div className="flex flex-wrap gap-4">
-          <a
-            href={site.social.email}
+          <Link
+            href="/contact"
             className="border hairline px-5 py-2.5 text-sm hover:border-[var(--border-strong)] hover:text-accent transition-colors"
           >
-            {site.email}
-          </a>
+            Contact me →
+          </Link>
+          <EmailLink className="border hairline px-5 py-2.5 text-sm hover:border-[var(--border-strong)] transition-colors" />
           <a
             href={site.social.linkedin}
             target="_blank"

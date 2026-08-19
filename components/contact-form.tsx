@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { EmailLink } from "@/components/email-link";
 
 export function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -20,10 +21,7 @@ export function ContactForm() {
         <h3 className="serif text-2xl tracking-tight">Thanks — message captured.</h3>
         <p className="text-muted mt-3 leading-relaxed">
           This form is currently a design preview. For now, please email{" "}
-          <a href="mailto:firdovsirz@gmail.com" className="text-foreground link-underline">
-            firdovsirz@gmail.com
-          </a>{" "}
-          directly.
+          <EmailLink className="text-foreground link-underline" /> directly.
         </p>
         <button
           onClick={() => setSubmitted(false)}
@@ -38,7 +36,7 @@ export function ContactForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <Field label="Name" name="name" placeholder="Your name" />
-      <Field label="Email" name="email" type="email" placeholder="you@institution.edu" />
+      <Field label="Email" name="email" type="email" placeholder="Your work or institutional email" />
       <Field label="Subject" name="subject" placeholder="What's this about?" />
       <Field
         label="Message"

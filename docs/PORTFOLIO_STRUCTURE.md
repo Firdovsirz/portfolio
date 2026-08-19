@@ -7,7 +7,7 @@ deployed at **firdovsirzaev.online**.
 
 | Route | Purpose |
 |---|---|
-| `/` | Hero, current roles, selected work, stack, CTA. |
+| `/` | Hero, current roles, selected work, approach, stack, FAQ, CTA. |
 | `/about` | Long-form positioning, operating principles, focus areas. |
 | `/projects` | List of all production and upcoming projects. |
 | `/projects/[slug]` | Project detail — overview, architecture, features, challenges, stack, screenshots. |
@@ -15,7 +15,9 @@ deployed at **firdovsirzaev.online**.
 | `/experience` | Roles at Dithari, AzTU, Buyology. |
 | `/education` | BSc at AzTU; planned MSc / MASc 2027. |
 | `/publications` | Upcoming publications and research. |
-| `/contact` | Contact form + email, LinkedIn, GitHub. |
+| `/contact` | Contact form + obfuscated email, LinkedIn, GitHub. |
+| `/blog`, `/blog/[slug]` | Engineering write-ups (MDX under `content/blog/`). |
+| `/llms.txt` | Plain-text site map for LLMs and AI search engines. |
 
 ## File layout
 
@@ -33,19 +35,30 @@ app/
   education/page.tsx
   publications/page.tsx
   contact/page.tsx
-  sitemap.ts               MetadataRoute.Sitemap
+  blog/
+    page.tsx               post index
+    [slug]/page.tsx        post detail (MDX)
+  llms.txt/route.ts        plain-text site map for LLMs
+  sitemap.ts               MetadataRoute.Sitemap (incl. image sitemap)
   robots.ts                MetadataRoute.Robots
 components/
   nav.tsx                  sticky header + mobile menu
   footer.tsx
   section.tsx              Section + PageHeader primitives
-  project-card.tsx
+  project-card.tsx         card; fixed-height plate slot at the foot
   contact-form.tsx         design-only form (no API yet)
+  faq.tsx                  Q&A block (also feeds FAQPage schema)
+  json-ld.tsx              plain <script type="application/ld+json">
+  email-link.tsx           address assembled client-side, never in the HTML
+  analytics.tsx            Plausible / GA4, enabled by env var only
 lib/
-  site.ts                  site metadata (name, url, social, nav)
+  site.ts                  site metadata, split email, canonical() helper
   projects.ts              project data (single source of truth)
-public/                    static assets
-docs/                      this document + templates
+  blog.ts                  MDX frontmatter loading
+  faq.ts                   site-level Q&A content
+  schema.ts                JSON-LD builders (Person, FAQPage, Breadcrumb, ...)
+public/                    static assets (project screenshots under projects/<slug>/)
+docs/                      this document, SEO.md, and templates
 profile-README.md          GitHub profile README (copy to Firdovsirz/Firdovsirz)
 ```
 
@@ -101,3 +114,50 @@ npm run build    # production build
 npm run start    # serve production build
 npm run lint
 ```
+
+## SEO conventions
+
+Read `docs/SEO.md` before changing metadata. Two rules matter most:
+
+1. **Every route must set `alternates: canonical("/its-path")`.** App Router
+   metadata is inherited, so a page that omits it silently canonicalises itself
+   to the home page.
+2. **Titles stay under 60 characters and descriptions between 120 and 160.**
+   Projects can override with `metaDescription`; blog posts with `seoTitle` /
+   `seoDescription` frontmatter. `docs/SEO.md` has a one-liner that audits every
+   built page.
+
+Project screenshots live in `public/projects/<slug>/` with descriptive,
+hyphenated filenames, are downscaled to 1920px on the long edge, and are
+declared in `lib/projects.ts` with both a static import (`src`) and the stable
+public path (`path`, used by the image sitemap).
+
+## Project card anatomy
+
+Every card ends in a fixed 96px **plate** — the colophon slot of a printed
+catalogue entry:
+
+- a project with a `thumbnail` shows a pre-cropped strip of its real interface
+- every other project shows its full stack
+
+Because the slot is the same height either way, an image adds **zero**
+differential height and a card with one never stretches its grid row. Cards
+measure identically at 1280px and 768px.
+
+Two fields, deliberately separate:
+
+| Field | Used by | What it is |
+|---|---|---|
+| `hero` | project page header | the full-page screenshot |
+| `thumbnail` | card plate | a pre-cut strip, sized for the 96px slot |
+
+Cropping a card plate (macOS `sips --cropOffset` is a delta from the *centred*
+crop and clamps negatives, so it cannot take a region off the top — use a
+canvas instead). Pick a region whose aspect matches the plate's widest form,
+526x96 = 5.48:1, so it fits exactly on desktop and crops from the right on
+narrower cards.
+
+Screenshots of light UIs would glare on the dark background, so
+`.project-plate` is damped in `globals.css` under `:root[data-theme="dark"]` —
+**not** Tailwind's `dark:` variant, which tracks `prefers-color-scheme` and
+would desync from this site's theme toggle.

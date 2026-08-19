@@ -11,6 +11,11 @@ export type PostFrontmatter = {
   description?: string;
   tags?: string[];
   draft?: boolean;
+  // Search-facing overrides. A headline that reads well on the page is often
+  // too long for a <title> (which also carries the " — Firdovsi Rzaev" suffix)
+  // or for a 160-character meta description; set these when it is.
+  seoTitle?: string;
+  seoDescription?: string;
 };
 
 export type PostMeta = {
@@ -21,6 +26,8 @@ export type PostMeta = {
   tags: string[];
   draft: boolean;
   cover: StaticImageData | null; // ./cover.png in the post folder, if present
+  seoTitle: string; // falls back to `title`
+  seoDescription: string; // falls back to `summary`
 };
 
 const BLOG_DIR = join(process.cwd(), "content", "blog");
@@ -51,14 +58,17 @@ export async function getPostMeta(slug: string): Promise<PostMeta | null> {
     const mod = await import(`@/content/blog/${slug}/index.mdx`);
     const fm = mod.frontmatter as PostFrontmatter | undefined;
     if (!fm) return null;
+    const summary = fm.summary ?? fm.description ?? "";
     return {
       slug,
       title: fm.title,
       date: fm.date,
-      summary: fm.summary ?? fm.description ?? "",
+      summary,
       tags: fm.tags ?? [],
       draft: fm.draft ?? false,
       cover: await getCover(slug),
+      seoTitle: fm.seoTitle ?? fm.title,
+      seoDescription: fm.seoDescription ?? summary,
     };
   } catch {
     return null;
