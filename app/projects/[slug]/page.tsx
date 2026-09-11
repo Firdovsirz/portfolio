@@ -116,6 +116,21 @@ export default async function ProjectPage(
         </div>
       )}
 
+      {project.metrics && project.metrics.length > 0 && (
+        <div className="mx-auto max-w-6xl px-6 lg:px-10 mt-16 md:mt-20">
+          <ul className="grid grid-cols-2 md:grid-cols-5 gap-x-6 gap-y-8">
+            {project.metrics.map((metric) => (
+              <li key={metric.label} className="border-t hairline pt-4">
+                <p className="serif text-4xl md:text-5xl tracking-tight">{metric.value}</p>
+                <p className="mono text-[10px] uppercase tracking-widest text-muted-2 mt-2">
+                  {metric.label}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <Section eyebrow="Overview">
         <div className="space-y-4 text-lg leading-relaxed text-muted max-w-3xl">
           {project.description.map((d, i) => (
@@ -139,20 +154,87 @@ export default async function ProjectPage(
         </Section>
       )}
 
-      <Section eyebrow="Architecture">
+      {project.surfaces && project.surfaces.length > 0 && (
+        <Section eyebrow="Surfaces" title="One API, every screen it reaches.">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {project.surfaces.map((surface) => (
+              <article key={surface.name} className="border hairline rounded-sm p-7">
+                <p className="mono text-[10px] text-muted-2 uppercase tracking-widest mb-3">
+                  {surface.platform}
+                </p>
+                <h3 className="serif text-2xl tracking-tight mb-3">{surface.name}</h3>
+                <p className="text-muted leading-relaxed text-sm">{surface.detail}</p>
+              </article>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      <Section eyebrow="Architecture" title={project.architecture ? "How it fits together." : undefined}>
+        {project.architecture && project.architecture.length > 0 && (
+          <div className="border hairline rounded-sm overflow-hidden mb-10">
+            {project.architecture.map((tier, i) => (
+              <div
+                key={tier.label}
+                className={`grid md:grid-cols-12 gap-y-4 md:gap-x-8 p-6 md:p-8 ${
+                  i > 0 ? "border-t hairline" : ""
+                }`}
+              >
+                <div className="md:col-span-3">
+                  <p className="mono text-xs text-accent uppercase tracking-widest">{tier.label}</p>
+                  {tier.note && (
+                    <p className="text-muted-2 text-sm mt-2 leading-relaxed">{tier.note}</p>
+                  )}
+                </div>
+                <div className="md:col-span-9 flex flex-wrap gap-2 content-start">
+                  {tier.nodes.map((node) => (
+                    <span
+                      key={node}
+                      className="mono text-xs border hairline px-3 py-1.5 text-muted bg-[var(--surface-2)] rounded-sm"
+                    >
+                      {node}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <p className="text-muted text-lg leading-relaxed max-w-3xl">{project.systemDesign}</p>
       </Section>
 
+      {Boolean(project.featureGroups?.length || project.features?.length) && (
       <Section eyebrow="Features">
-        <ul className="grid md:grid-cols-2 gap-x-10 gap-y-3 max-w-3xl">
-          {project.features.map((f) => (
-            <li key={f} className="flex gap-3 text-foreground">
-              <span className="text-accent mono text-xs mt-2">▸</span>
-              <span>{f}</span>
-            </li>
-          ))}
-        </ul>
+        {project.featureGroups && project.featureGroups.length > 0 ? (
+          <div className="grid md:grid-cols-2 gap-x-12 gap-y-12">
+            {project.featureGroups.map((group) => (
+              <div key={group.title}>
+                <h3 className="mono text-xs text-accent uppercase tracking-widest mb-5 pb-3 border-b hairline">
+                  {group.title}
+                </h3>
+                <ul className="space-y-3">
+                  {group.items.map((item) => (
+                    <li key={item} className="flex gap-3 text-muted leading-relaxed">
+                      <span className="text-accent mono text-xs mt-1.5">▸</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <ul className="grid md:grid-cols-2 gap-x-10 gap-y-3 max-w-3xl">
+            {(project.features ?? []).map((f) => (
+              <li key={f} className="flex gap-3 text-foreground">
+                <span className="text-accent mono text-xs mt-2">▸</span>
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </Section>
+      )}
 
       <Section eyebrow="Engineering challenges">
         <ul className="space-y-5 max-w-3xl">

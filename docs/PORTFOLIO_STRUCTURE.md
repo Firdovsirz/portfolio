@@ -115,6 +115,27 @@ npm run start    # serve production build
 npm run lint
 ```
 
+## Project page sections
+
+`app/projects/[slug]/page.tsx` renders a fixed order of sections, each of which
+disappears when its data is absent. A small project supplies `summary`,
+`description`, `features`, `stack`, `challenges` and `systemDesign` and gets a
+plain page; a large one fills in the rest:
+
+| Field | Section |
+|---|---|
+| `metrics` | scale strip under the hero — headline numbers |
+| `facts` | "At a glance" definition list |
+| `surfaces` | the client applications the project ships |
+| `architecture` | layered diagram, rendered top-to-bottom as the request path |
+| `featureGroups` | features grouped by domain — takes precedence over flat `features` |
+| `gallery` | captioned screenshots |
+| `faq` | Q&A block, also emitted as FAQPage structured data |
+
+`architecture` tiers are ordered surface-inward: put the clients first and the
+datastores and third parties last, so the diagram reads as the path a request
+takes rather than as an unordered inventory.
+
 ## SEO conventions
 
 Read `docs/SEO.md` before changing metadata. Two rules matter most:

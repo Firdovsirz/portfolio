@@ -153,7 +153,9 @@ export function projectLd(project: Project) {
     provider: { "@type": "Organization", name: project.client },
     isPartOf: { "@id": WEBSITE_ID },
     keywords: project.stack.join(", "),
-    featureList: project.features,
+    featureList: project.featureGroups?.length
+      ? project.featureGroups.flatMap((g) => g.items)
+      : (project.features ?? []),
     offers: {
       "@type": "Offer",
       price: 0,

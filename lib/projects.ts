@@ -2,6 +2,14 @@ import type { StaticImageData } from "next/image";
 
 import msjHome from "@/public/projects/aztu-machine-science-journal/aztu-machine-science-journal-homepage.png";
 import msjCard from "@/public/projects/aztu-machine-science-journal/aztu-machine-science-journal-card.png";
+
+import boHome from "@/public/projects/buyology-ecommerce/buyology-ecommerce-storefront-homepage.png";
+import boCard from "@/public/projects/buyology-ecommerce/buyology-ecommerce-card.png";
+import boCatalogue from "@/public/projects/buyology-ecommerce/buyology-ecommerce-product-catalogue.png";
+import boAiTools from "@/public/projects/buyology-ecommerce/buyology-ecommerce-ai-tools.png";
+import boAssistant from "@/public/projects/buyology-ecommerce/buyology-ecommerce-buyobot-assistant.png";
+import boVoiceSearch from "@/public/projects/buyology-ecommerce/buyology-ecommerce-voice-search.png";
+import boSignup from "@/public/projects/buyology-ecommerce/buyology-ecommerce-account-signup.png";
 import msjCurrentIssue from "@/public/projects/aztu-machine-science-journal/aztu-machine-science-journal-current-issue.png";
 import msjBoard from "@/public/projects/aztu-machine-science-journal/aztu-machine-science-journal-editorial-board.png";
 import msjArchive from "@/public/projects/aztu-machine-science-journal/aztu-machine-science-journal-issue-archive.png";
@@ -25,6 +33,18 @@ export type ProjectFact = { label: string; value: string };
 
 export type ProjectFaq = { question: string; answer: string };
 
+/** A headline number for the scale strip near the top of a project page. */
+export type ProjectMetric = { value: string; label: string };
+
+/** One client application the project ships. */
+export type ProjectSurface = { name: string; platform: string; detail: string };
+
+/** One horizontal tier of the layered architecture diagram, top to bottom. */
+export type ProjectTier = { label: string; note?: string; nodes: string[] };
+
+/** Features grouped by domain, for projects with too many to read as one list. */
+export type ProjectFeatureGroup = { title: string; items: string[] };
+
 export type Project = {
   slug: string;
   name: string;
@@ -34,7 +54,8 @@ export type Project = {
   year: string;
   summary: string;
   description: string[];
-  features: string[];
+  /** Flat feature list. Use `featureGroups` instead when there are many. */
+  features?: string[];
   stack: string[];
   challenges: string[];
   systemDesign: string;
@@ -46,6 +67,14 @@ export type Project = {
    * falls outside that window; search engines truncate anything longer.
    */
   metaDescription?: string;
+  /** Headline numbers rendered as a scale strip under the hero. */
+  metrics?: ProjectMetric[];
+  /** The client applications this project ships. */
+  surfaces?: ProjectSurface[];
+  /** Layered architecture diagram, rendered top-to-bottom. */
+  architecture?: ProjectTier[];
+  /** Features grouped by domain. Takes precedence over the flat `features`. */
+  featureGroups?: ProjectFeatureGroup[];
   /** Key/value facts rendered as a definition list on the project page. */
   facts?: ProjectFact[];
   /** Question-and-answer content — feeds the on-page FAQ and FAQPage schema. */
@@ -217,34 +246,302 @@ export const projects: Project[] = [
   },
   {
     slug: "buyology-ecommerce",
-    metaDescription:
-      "Multi-surface e-commerce platform for Buyology Trading FZ-LLC — web storefront, React Native mobile app, and an operations dashboard on one service layer.",
     name: "Buyology E-Commerce Platform",
     client: "Buyology Trading FZ-LLC (UAE)",
     role: "Software Developer · Team Lead",
     status: "Production",
     year: "2024 — Present",
+    liveUrl: "https://buyology.online",
+    metaDescription:
+      "Multi-surface commerce platform for the UAE — Next.js storefront, iOS and Android apps, admin dashboard, and a 39-context Spring Boot core with AI assistants.",
     summary:
-      "Scalable multi-surface e-commerce platform spanning web storefront, mobile application, and administrative dashboard.",
+      "Multi-surface commerce platform for the UAE — a Next.js storefront, iOS and Android apps, an operations dashboard, and a 39-context Spring Boot core.",
     description: [
-      "End-to-end commerce platform with separate consumer web, native mobile, and operations dashboard surfaces backed by a shared service layer.",
-      "Owns product catalogue, ordering, fulfilment, B2B inquiry intake, newsletter, and gamified engagement features.",
+      "Buyology is a consumer electronics marketplace operating out of the UAE, and the largest system I have worked on. I lead the engineering team building it. It is not one shop front but five applications over a single domain: a public storefront, native iOS and Android apps, an operations dashboard for staff, and a marketing surface — all reading one API.",
+      "The commerce core is the part most people would expect: catalogue, variants and specifications, search, cart, checkout, payments, refunds, promotions, reviews and Q&A. What makes the system large is everything the business does that is not simply selling a boxed product. Customers can book a device repair, sell or trade in hardware they already own, rent equipment, order from a powerbank station network, request B2B quotes, or apply to become a supplier. Each of those is its own workflow with its own states, its own pricing, and its own operations screens.",
+      "Three of those flows are answered by a language model. A storefront assistant answers product and order questions against the live catalogue; the repair flow estimates a price from photographs of the damage plus a description; the trade-in flow values used hardware the same way. All three run on Anthropic's Claude, and all three are grounded in the live database rather than in a static prompt, so a price change in the dashboard is reflected in what the model says next.",
+      "Delivery is where the architecture stops being a single application. Orders leave the commerce core and enter a separate courier service — its own deployment, its own Keycloak-issued identities — which publishes assignment, status and GPS events onto a RabbitMQ topic exchange. The commerce core consumes them from a durable queue with a dead-letter path, and fans the interesting ones out to customers over WebSocket, which is how live courier tracking and customer-to-courier chat work.",
+      "The platform serves seven markets. The UAE is the primary storefront; Saudi Arabia, Qatar, Oman, India, Bahrain and Azerbaijan each have their own regional host, with Cloudflare resolving the visitor's country at the edge and Nginx handing it to the application as a trusted header. Product data, currency and delivery pricing are all market-scoped.",
     ],
-    features: [
-      "Product catalogue and inventory management",
-      "Order lifecycle and fulfilment workflows",
-      "B2B inquiry intake and routing",
-      "Customer engagement (games, newsletter)",
-      "Role-based administrative dashboard",
+    metrics: [
+      { value: "39", label: "Bounded contexts" },
+      { value: "900+", label: "Backend source files" },
+      { value: "128", label: "Domain entities" },
+      { value: "5", label: "Client applications" },
+      { value: "7", label: "Markets served" },
     ],
-    stack: ["Next.js", "React Native", "TypeScript", "Spring Boot", "PostgreSQL", "Docker", "Nginx"],
+    surfaces: [
+      {
+        name: "Web storefront",
+        platform: "Next.js · App Router",
+        detail:
+          "The primary shop. Server-rendered and region-aware, in English, Arabic and Azerbaijani, with Elasticsearch-backed search, a voice-driven command palette, and live order tracking over STOMP.",
+      },
+      {
+        name: "iOS app",
+        platform: "React Native · Expo · Swift project",
+        detail:
+          "A native Xcode target built and released through EAS. Sign in with Apple, Google and Facebook, push notifications, and Live Activities that keep a delivery on the lock screen while the courier is moving.",
+      },
+      {
+        name: "Android app",
+        platform: "React Native · Expo · Gradle project",
+        detail:
+          "The same codebase against a native Android project, released through EAS to Google Play, with an end-to-end Maestro suite that runs on a real emulator in CI on every change.",
+      },
+      {
+        name: "Operations dashboard",
+        platform: "React · Vite",
+        detail:
+          "What staff actually run the business on: catalogue and stock, order and refund handling, review moderation, courier dispatch, role assignment, and revenue reporting.",
+      },
+      {
+        name: "Marketing site",
+        platform: "Next.js",
+        detail:
+          "The public brand surface and the regional landing pages that visitors outside a served market are routed to.",
+      },
+    ],
+    architecture: [
+      {
+        label: "Surfaces",
+        note: "Five applications, one API contract",
+        nodes: ["Web storefront", "iOS app", "Android app", "Ops dashboard", "Marketing site"],
+      },
+      {
+        label: "Edge",
+        note: "Country resolved before the request reaches the app",
+        nodes: ["Cloudflare", "Nginx per-region hosts", "Rate limiting", "TLS / HSTS"],
+      },
+      {
+        label: "Commerce core",
+        note: "Spring Boot modular monolith · 39 bounded contexts",
+        nodes: [
+          "auth",
+          "product",
+          "cart",
+          "order",
+          "payment",
+          "refund",
+          "review",
+          "b2b",
+          "supplier",
+          "membership",
+          "repair",
+          "sell",
+          "promo",
+          "payout",
+          "revenue",
+          "assistant",
+        ],
+      },
+      {
+        label: "Async & realtime",
+        note: "How delivery reaches the customer's screen",
+        nodes: [
+          "RabbitMQ topic exchange",
+          "Dead-letter queue",
+          "STOMP over WebSocket",
+          "Scheduled retry jobs",
+        ],
+      },
+      {
+        label: "Data",
+        note: "One relational source of truth, one search index",
+        nodes: ["PostgreSQL", "Flyway migrations", "Elasticsearch", "S3 object storage + CDN"],
+      },
+      {
+        label: "Services & integrations",
+        note: "Separate deployments and third parties",
+        nodes: [
+          "Courier service (Keycloak)",
+          "Quiqup delivery",
+          "Paymob payments",
+          "ERPNext",
+          "Anthropic Claude",
+          "Twilio · SendGrid",
+          "Firebase push",
+          "n8n automation",
+        ],
+      },
+    ],
+    featureGroups: [
+      {
+        title: "Commerce core",
+        items: [
+          "Catalogue with variants, specifications, and per-market pricing",
+          "Product data translated across English, Arabic, and Azerbaijani",
+          "Elasticsearch product search with a voice-driven command palette",
+          "Cart, checkout, and Paymob payment processing with webhooks",
+          "Refunds, promo codes, and membership tiers",
+          "Reviews, ratings, and product Q&A with moderation and content filtering",
+        ],
+      },
+      {
+        title: "Beyond retail",
+        items: [
+          "Device repair booking with AI price estimation from photos",
+          "Sell and trade-in flows with AI valuation of used hardware",
+          "Equipment rentals and DIY guides",
+          "Powerbank station network",
+          "B2B quote requests and product sourcing requests",
+          "Supplier onboarding and payouts",
+        ],
+      },
+      {
+        title: "Fulfilment & delivery",
+        items: [
+          "Separate courier service integrated over RabbitMQ",
+          "Quiqup third-party dispatch with webhooks and retry jobs",
+          "Live courier GPS tracking pushed to customers over WebSocket",
+          "Customer-to-courier chat",
+          "Store pickup, quick delivery, and per-market delivery pricing",
+        ],
+      },
+      {
+        title: "AI",
+        items: [
+          "Buyobot storefront assistant grounded in the live catalogue",
+          "Repair price estimation from damage photographs",
+          "Trade-in valuation for used devices",
+          "Retrieval before generation — one model call per message, not a tool loop",
+          "Admin-visible transcripts of every assistant conversation",
+        ],
+      },
+      {
+        title: "Platform & operations",
+        items: [
+          "Three-layer RBAC: user type, assigned roles, per-user allow/deny overrides",
+          "JWT access tokens with refresh rotated through HttpOnly cookies",
+          "TOTP multi-factor authentication for staff",
+          "Rate limiting, HTML sanitisation, and audit-friendly structured logging",
+          "ERPNext product import and order synchronisation",
+          "n8n workflows for bulk catalogue automation",
+          "Prometheus metrics and health probes via Actuator",
+        ],
+      },
+    ],
+    stack: [
+      "Next.js",
+      "React Native",
+      "Expo",
+      "TypeScript",
+      "Spring Boot",
+      "Java 17",
+      "PostgreSQL",
+      "Elasticsearch",
+      "RabbitMQ",
+      "WebSocket",
+      "Anthropic Claude",
+      "Docker",
+      "Nginx",
+      "Cloudflare",
+    ],
     challenges: [
-      "Coordinating three client surfaces against one evolving API contract.",
-      "Designing the ordering pipeline to remain consistent across web, mobile, and admin actors.",
-      "Leading a small engineering team through release cadence, code review, and architectural decisions.",
+      "Five client applications against one API. Every contract change has to land on a web app that ships continuously and two store-reviewed mobile apps that cannot — so the API only ever grows, and the mobile builds in the field keep working while the storefront moves ahead of them.",
+      "Delivery events arrive from a service I do not control the uptime of. The courier backend publishes assignments, status changes, and GPS positions onto a topic exchange; the commerce core binds its own durable queue with a dead-letter path so a restart on either side loses nothing, and duplicated events settle to the same order state rather than double-charging or double-refunding it.",
+      "Putting a language model in front of an anonymous, unauthenticated endpoint. The assistant retrieves candidate products server-side and then makes exactly one model call, instead of handing the model a search tool and letting it loop — a tool loop would triple the latency a customer feels and let an abuser run up the bill. Product scope for a market is decided by the server, never by the model.",
+      "Seven markets from one catalogue. Currency, delivery pricing, product availability, and language all vary by country, and the country itself is resolved at the CDN edge and passed inward as a header — which means the origin has to be locked to the CDN, or a visitor could simply choose their own market and pricing.",
+      "Money has to reconcile in three places at once: the payment provider, the ERP, and our own ledger. Payment state is driven by provider webhooks rather than by the browser returning from a redirect, because the browser is the one participant guaranteed to sometimes not come back.",
+      "Leading the team through it. Thirty-nine bounded contexts only stay readable if the boundaries are enforced in review, so the package layout, the handoff documents that front-end and mobile build against, and the migration discipline are as much of the work as the code.",
     ],
     systemDesign:
-      "Modular monolith backend with clear bounded contexts for catalogue, orders, customers, and engagement. Shared TypeScript domain types across web and mobile clients to keep contracts coherent. Dockerised services behind Nginx with environment-segregated deployments.",
+      "A Spring Boot modular monolith holds the commerce domain: thirty-nine bounded contexts, each a package that owns its own controllers, domain, DTOs, repositories, and services, so a context can be reasoned about — and later extracted — without unpicking the rest. Delivery is already extracted: the courier service runs as its own deployment with Keycloak-issued identities, reached over REST for commands and integrated over a RabbitMQ topic exchange for events, with a dead-letter queue for anything unprocessable. Read-heavy product search is offloaded to Elasticsearch while PostgreSQL stays the single source of truth, with schema changes going through versioned Flyway migrations. Realtime reaches customers over STOMP, authenticated by the JWT carried in the CONNECT frame and verified by HMAC without a database round trip, which is what keeps courier GPS updates cheap enough to broadcast continuously.",
+    facts: [
+      { label: "Markets", value: "UAE · Saudi Arabia · Qatar · Oman · India · Bahrain · Azerbaijan" },
+      { label: "Languages", value: "English · Arabic · Azerbaijani" },
+      { label: "Backend", value: "Spring Boot 3.4.2 on Java 17" },
+      { label: "Datastores", value: "PostgreSQL with 50 Flyway migrations · Elasticsearch" },
+      { label: "Messaging", value: "RabbitMQ topic exchange with dead-letter queue · STOMP over WebSocket" },
+      {
+        label: "Authentication",
+        value: "JWT access tokens with HttpOnly refresh cookies · Google, Apple and Facebook OAuth · TOTP MFA",
+      },
+      { label: "Mobile", value: "React Native on Expo — native iOS and Android projects, released via EAS" },
+      { label: "AI", value: "Anthropic Claude — storefront assistant, repair estimation, trade-in valuation" },
+      {
+        label: "Delivery",
+        value: "In-house courier service over RabbitMQ · Quiqup third-party dispatch",
+      },
+      { label: "CI/CD", value: "GitHub Actions — backend build and deploy, twelve mobile workflows including Maestro end-to-end runs" },
+    ],
+    faq: [
+      {
+        question: "What is the Buyology e-commerce platform?",
+        answer:
+          "Buyology is a consumer electronics marketplace operating from the UAE across seven markets. The platform is five client applications — a Next.js web storefront, native iOS and Android apps, an operations dashboard, and a marketing site — over a single Spring Boot API organised into thirty-nine bounded contexts.",
+      },
+      {
+        question: "Is there a Buyology app for iOS and Android?",
+        answer:
+          "Yes. Both are built from one React Native codebase on Expo, with real native projects underneath — an Xcode project for iOS and a Gradle project for Android — and released through EAS to the App Store and Google Play. Both support Apple, Google and Facebook sign-in, push notifications, live order tracking on a map, and customer-to-courier chat; iOS additionally shows delivery progress as a Live Activity on the lock screen.",
+      },
+      {
+        question: "How is the backend architected?",
+        answer:
+          "As a modular monolith with thirty-nine bounded contexts, each owning its own controllers, domain model, DTOs, repositories and services, plus a separately deployed courier service. The two communicate over REST for commands and a RabbitMQ topic exchange for events, with a durable consumer queue and a dead-letter path. PostgreSQL is the source of truth under versioned Flyway migrations; Elasticsearch serves product search; realtime updates reach clients over STOMP.",
+      },
+      {
+        question: "Where is AI used in the platform?",
+        answer:
+          "In three places, all on Anthropic's Claude and all grounded in live database state rather than a static prompt: Buyobot, the storefront assistant that answers product and order questions; repair price estimation, which reads photographs of the damage alongside the customer's description; and trade-in valuation for used hardware. The assistant retrieves candidate products server-side and then makes a single model call per message, so latency and cost stay bounded on a public endpoint.",
+      },
+      {
+        question: "How does live delivery tracking work?",
+        answer:
+          "The courier service publishes assignment, status and location events to a RabbitMQ topic exchange. The commerce core consumes them from its own durable queue and republishes the customer-facing ones over STOMP, where the web and mobile apps subscribe per order. Clients authenticate by sending their JWT in the WebSocket CONNECT frame, which is verified by HMAC without a database lookup.",
+      },
+      {
+        question: "How does the platform handle multiple countries and currencies?",
+        answer:
+          "Each market has its own regional host. Cloudflare resolves the visitor's country at the edge and Nginx passes it inward as a trusted header, with the origin firewalled to CDN ranges so the header cannot be forged. Catalogue availability, currency, delivery fees and free-shipping thresholds are all scoped per market, and product content is translated across English, Arabic and Azerbaijani.",
+      },
+    ],
+    ogImage: "/projects/buyology-ecommerce/buyology-ecommerce-og.png",
+    hero: {
+      src: boHome,
+      path: "/projects/buyology-ecommerce/buyology-ecommerce-storefront-homepage.png",
+      alt: "Buyology storefront homepage showing the search bar over a catalogue of 120,000 products, the category navigation for repair, sell, rent, powerbank stations and DIY, and a giveaway campaign banner",
+      caption: "Public storefront — buyology.online",
+    },
+    thumbnail: {
+      src: boCard,
+      path: "/projects/buyology-ecommerce/buyology-ecommerce-card.png",
+      alt: "Buyology storefront masthead — the promotional delivery bar above the Buyology logo, product search, and category navigation",
+      caption: "buyology.online",
+    },
+    gallery: [
+      {
+        src: boCatalogue,
+        path: "/projects/buyology-ecommerce/buyology-ecommerce-product-catalogue.png",
+        alt: "Buyology catalogue page listing products with bestseller badges, category and price-range filters in the sidebar, and a sort control",
+        caption: "Catalogue — faceted filtering over the search index",
+      },
+      {
+        src: boVoiceSearch,
+        path: "/projects/buyology-ecommerce/buyology-ecommerce-voice-search.png",
+        alt: "Buyology search command palette open over the storefront, showing trending product searches and service shortcuts with keyboard navigation hints and a voice input button",
+        caption: "Search — a command palette with text and voice input",
+      },
+      {
+        src: boAiTools,
+        path: "/projects/buyology-ecommerce/buyology-ecommerce-ai-tools.png",
+        alt: "Buyology AI page presenting the assistant tools, including the Buyobot shopping assistant, cart recommender, budget optimizer, tech consultant, and accessory compatibility checker",
+        caption: "Buyology AI — the assistant surfaces, grounded in live data",
+      },
+      {
+        src: boAssistant,
+        path: "/projects/buyology-ecommerce/buyology-ecommerce-buyobot-assistant.png",
+        alt: "The Buyobot chat widget open on the Buyology announcements page, offering quick actions to track an order, handle returns and refunds, find a product, or hand over to a human agent",
+        caption: "Buyobot — one Claude call per message, with human handover",
+      },
+      {
+        src: boSignup,
+        path: "/projects/buyology-ecommerce/buyology-ecommerce-account-signup.png",
+        alt: "Buyology account creation page with a split layout, offering separate personal and business account types alongside an optional giveaway entry",
+        caption: "Sign-up — personal and business account types",
+      },
+    ],
   },
   {
     slug: "dithari-lms",
