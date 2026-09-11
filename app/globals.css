@@ -115,3 +115,17 @@ button {
 :root[data-theme="dark"] .project-plate {
   filter: brightness(0.82) saturate(0.9);
 }
+
+/* Company logos are dark marks with no light parts: measured against the dark
+   ground they land at 1.4-2.0:1, far under the 3:1 minimum for graphics, and
+   Dithari's flat green and the FR monogram disappear outright. So the tile
+   carries its own light ground in both themes. #d8d8d2 rather than white keeps
+   the darkest mark at 6.9:1 while reading 13.8:1 against the page instead of
+   white's 19.8:1 glare. Scoped to [data-theme] — Tailwind's `dark:` variant
+   tracks prefers-color-scheme and would desync from the theme toggle. */
+.logo-tile {
+  background: #ffffff;
+}
+:root[data-theme="dark"] .logo-tile {
+  background: #d8d8d2;
+}
